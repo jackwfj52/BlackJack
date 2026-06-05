@@ -1,0 +1,1537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>21点 Blackjack</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: #0d3b1a radial-gradient(ellipse at center, #1a5c2a 0%, #0a2a10 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #f0e6d3;
+  }
+
+  .game-container {
+    width: 100%;
+    max-width: 900px;
+    padding: 20px;
+  }
+
+  /* === HEADER === */
+  .header {
+    text-align: center;
+    margin-bottom: 12px;
+    position: relative;
+  }
+  .header h1 {
+    font-size: 2.2em;
+    color: #d4a843;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+    letter-spacing: 4px;
+  }
+  .balance {
+    font-size: 1.1em;
+    color: #f0d080;
+    margin-top: 4px;
+  }
+  .balance span { font-weight: bold; color: #ffd700; }
+
+  .header-btns {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    gap: 6px;
+  }
+  .header-icon-btn {
+    background: none;
+    border: 1px solid #c0a878;
+    color: #c0a878;
+    font-size: 1.1em;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+  .header-icon-btn:hover { color: #ffd700; border-color: #ffd700; }
+  .header-icon-btn.save-active { color: #2ecc71; border-color: #2ecc71; }
+  .header-icon-btn.quit-btn:hover { color: #e74c3c; border-color: #e74c3c; }
+
+  /* === TABLE === */
+  .table {
+    background: #1a5c2a;
+    border: 6px solid #4a3728;
+    border-radius: 200px;
+    padding: 30px 40px;
+    min-height: 420px;
+    box-shadow: inset 0 0 80px rgba(0,0,0,0.4), 0 8px 32px rgba(0,0,0,0.5);
+    position: relative;
+  }
+
+  .dealer-area, .player-area {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .label {
+    font-size: 0.9em;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: #c0a878;
+    margin-bottom: 6px;
+  }
+
+  .cards-row {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    min-height: 110px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  /* === CARD === */
+  .card {
+    width: 75px;
+    height: 108px;
+    border-radius: 8px;
+    box-shadow: 2px 4px 10px rgba(0,0,0,0.4);
+    position: relative;
+    margin: 0 -6px;
+    transition: transform 0.25s, box-shadow 0.25s;
+    overflow: hidden;
+  }
+  .card:first-child { margin-left: 0; }
+  .card:last-child { margin-right: 0; }
+  .card:hover { transform: translateY(-6px); box-shadow: 4px 8px 16px rgba(0,0,0,0.5); }
+
+  .card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 6px;
+  }
+
+  /* === SCORE === */
+  .score {
+    font-size: 1em;
+    color: #f0d080;
+    margin-top: 4px;
+    min-height: 1.4em;
+  }
+  .score span { font-weight: bold; color: #ffd700; }
+
+  /* === MESSAGE === */
+  .message-area {
+    text-align: center;
+    min-height: 2.5em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 8px 0;
+  }
+  .message {
+    font-size: 1.2em;
+    font-weight: bold;
+    padding: 6px 20px;
+    border-radius: 20px;
+    background: rgba(0,0,0,0.4);
+    color: #ffd700;
+    letter-spacing: 1px;
+  }
+  .message.win { color: #2ecc71; }
+  .message.lose { color: #e74c3c; }
+  .message.push { color: #f39c12; }
+
+  /* === CONTROLS === */
+  .controls {
+    margin-top: 16px;
+    text-align: center;
+  }
+
+  .bet-area {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .bet-display {
+    font-size: 1.1em;
+    color: #f0d080;
+    min-width: 100px;
+  }
+  .bet-display span { color: #ffd700; font-weight: bold; }
+
+  .chip-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 3px dashed #d4a843;
+    font-weight: bold;
+    font-size: 1em;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .chip-btn:hover { transform: scale(1.15); }
+  .chip-btn:active { transform: scale(0.95); }
+
+  .chip-1  { background: #f5f5f5; color: #333; }
+  .chip-5  { background: #e74c3c; color: #fff; }
+  .chip-10 { background: #2980b9; color: #fff; }
+  .chip-25 { background: #27ae60; color: #fff; }
+  .chip-50 { background: #f39c12; color: #fff; }
+  .chip-100{ background: #1a1a1a; color: #ffd700; border-color: #ffd700; }
+
+  .btn {
+    padding: 10px 24px;
+    border-radius: 24px;
+    border: 2px solid #d4a843;
+    background: linear-gradient(180deg, #4a3728, #2a1f14);
+    color: #f0d080;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .btn:hover:not(:disabled) {
+    background: linear-gradient(180deg, #5a4738, #3a2f24);
+    border-color: #ffd700;
+    color: #ffd700;
+  }
+  .btn:active:not(:disabled) { transform: scale(0.96); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn.primary {
+    background: linear-gradient(180deg, #d4a843, #b8922e);
+    color: #1a1a1a;
+    border-color: #ffd700;
+    font-size: 1.1em;
+    padding: 12px 36px;
+  }
+  .btn.danger {
+    border-color: #e74c3c;
+    color: #e74c3c;
+    background: linear-gradient(180deg, #4a2020, #2a1010);
+  }
+  .btn.danger:hover:not(:disabled) {
+    border-color: #ff6b6b;
+    color: #ff6b6b;
+    background: linear-gradient(180deg, #5a2828, #3a1818);
+    box-shadow: 0 0 12px rgba(231,76,60,0.35);
+  }
+  .btn.allin {
+    border-color: #ffd700;
+    color: #ffd700;
+    background: linear-gradient(180deg, #3a2a10, #1a1000);
+    font-size: 0.9em;
+    padding: 10px 16px;
+  }
+  .btn.allin:hover:not(:disabled) {
+    border-color: #fff;
+    color: #fff;
+    background: linear-gradient(180deg, #4a3a18, #2a2008);
+    box-shadow: 0 0 14px rgba(255,215,0,0.4);
+  }
+  .btn.insurance { border-color: #3498db; color: #3498db; }
+
+  .action-area {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+
+  /* === SPLIT HANDS === */
+  .hand-group {
+    margin-bottom: 8px;
+    padding: 8px;
+    border-radius: 12px;
+    border: 2px solid transparent;
+    transition: border-color 0.3s;
+  }
+  .hand-group.active {
+    border-color: #ffd700;
+    background: rgba(255,215,0,0.08);
+  }
+  .hand-group .hand-label {
+    font-size: 0.85em;
+    color: #c0a878;
+    margin-bottom: 4px;
+  }
+  .hand-group.active .hand-label { color: #ffd700; }
+
+  /* === MODAL === */
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  .modal-overlay.hidden { display: none; }
+
+  .modal {
+    background: #1a3a1a;
+    border: 3px solid #4a3728;
+    border-radius: 16px;
+    padding: 20px 24px;
+    max-width: 520px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+  }
+  .modal h2 {
+    color: #d4a843;
+    text-align: center;
+    margin-bottom: 16px;
+    letter-spacing: 2px;
+    font-size: 1.3em;
+  }
+  .modal .close-btn {
+    float: right;
+    background: none;
+    border: none;
+    color: #c0a878;
+    font-size: 1.4em;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 4px;
+  }
+  .modal .close-btn:hover { color: #ffd700; }
+
+  .back-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .back-option {
+    cursor: pointer;
+    border-radius: 6px;
+    border: 2px solid transparent;
+    overflow: hidden;
+    transition: all 0.15s;
+    aspect-ratio: 75 / 108;
+  }
+  .back-option:hover { transform: scale(1.08); }
+  .back-option.selected { border-color: #ffd700; box-shadow: 0 0 12px rgba(255,215,0,0.5); }
+  .back-option img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .upload-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .upload-label {
+    cursor: pointer;
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: 2px dashed #c0a878;
+    color: #c0a878;
+    font-size: 0.9em;
+    transition: all 0.15s;
+    display: inline-block;
+  }
+  .upload-label:hover { border-color: #ffd700; color: #ffd700; }
+  .upload-label input { display: none; }
+  .reset-back-btn {
+    background: none;
+    border: 1px solid #e74c3c;
+    color: #e74c3c;
+    padding: 6px 14px;
+    border-radius: 14px;
+    cursor: pointer;
+    font-size: 0.85em;
+    transition: all 0.15s;
+  }
+  .reset-back-btn:hover { background: #e74c3c; color: #fff; }
+
+  /* === SAVE MODAL === */
+  .save-status {
+    text-align: center;
+    color: #c0a878;
+    font-size: 0.9em;
+    margin-bottom: 12px;
+  }
+  .save-status span { color: #2ecc71; font-weight: bold; }
+  .save-input-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .save-input-row input {
+    flex: 1;
+    padding: 8px 14px;
+    border-radius: 20px;
+    border: 2px solid #4a3728;
+    background: #0d2a10;
+    color: #f0e6d3;
+    font-size: 0.95em;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .save-input-row input:focus { border-color: #d4a843; }
+  .save-input-row input::placeholder { color: #5a7a5a; }
+  .save-list { display: flex; flex-direction: column; gap: 6px; }
+  .save-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid #3a4a2a;
+    background: rgba(0,0,0,0.25);
+    gap: 10px;
+  }
+  .save-item .save-info { flex: 1; min-width: 0; }
+  .save-item .save-name {
+    color: #f0d080;
+    font-weight: bold;
+    font-size: 0.95em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .save-item .save-meta {
+    color: #8a9a7a;
+    font-size: 0.8em;
+    margin-top: 2px;
+  }
+  .save-item .save-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .btn-sm {
+    padding: 4px 12px;
+    border-radius: 12px;
+    border: 1px solid #c0a878;
+    background: rgba(0,0,0,0.3);
+    color: #c0a878;
+    font-size: 0.8em;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .btn-sm:hover { border-color: #ffd700; color: #ffd700; }
+  .btn-sm.danger { border-color: #e74c3c; color: #e74c3c; }
+  .btn-sm.danger:hover { background: #e74c3c; color: #fff; }
+
+  /* === RESPONSIVE === */
+  @media (max-width: 600px) {
+    .table { border-radius: 40px; padding: 20px 15px; }
+    .card { width: 56px; height: 82px; margin: 0 -4px; }
+    .cards-row { min-height: 90px; }
+    .chip-btn { width: 40px; height: 40px; font-size: 0.8em; }
+    .btn { padding: 8px 16px; font-size: 0.85em; }
+    .btn.primary { padding: 10px 24px; font-size: 1em; }
+    .header h1 { font-size: 1.5em; }
+    .back-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .header-icon-btn { width: 30px; height: 30px; font-size: 0.9em; }
+  }
+
+  /* === TOAST === */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    font-size: 0.85em;
+    color: #e74c3c;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    z-index: 2000;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+  }
+</style>
+</head>
+<body>
+<div class="game-container">
+  <div class="header">
+    <h1>&spades; 21点 &nbsp;BLACKJACK &clubs;</h1>
+    <div class="balance">余额: $<span id="balance">1000</span></div>
+    <div class="header-btns">
+      <button class="header-icon-btn" id="save-btn" title="存档管理">&#128190;</button>
+      <button class="header-icon-btn" id="settings-btn" title="牌背设置">&#9881;</button>
+      <button class="header-icon-btn quit-btn" id="quit-btn" title="退出游戏">&#10005;</button>
+    </div>
+  </div>
+
+  <div class="table">
+    <!-- Dealer -->
+    <div class="dealer-area">
+      <div class="label">庄家 Dealer</div>
+      <div class="cards-row" id="dealer-cards"></div>
+      <div class="score" id="dealer-score"></div>
+    </div>
+
+    <!-- Message -->
+    <div class="message-area">
+      <span class="message" id="message">请下注开始游戏</span>
+    </div>
+
+    <!-- Player -->
+    <div class="player-area">
+      <div class="label">闲家 Player</div>
+      <div id="player-hands"></div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="bet-area" id="bet-area">
+      <span class="bet-display">下注: $<span id="bet-display">0</span></span>
+      <button class="chip-btn chip-1" data-amount="1">$1</button>
+      <button class="chip-btn chip-5" data-amount="5">$5</button>
+      <button class="chip-btn chip-10" data-amount="10">$10</button>
+      <button class="chip-btn chip-25" data-amount="25">$25</button>
+      <button class="chip-btn chip-50" data-amount="50">$50</button>
+      <button class="chip-btn chip-100" data-amount="100">$100</button>
+	      <button class="btn allin" id="allin-btn">ALL IN</button>
+      <button class="btn danger" id="clear-bet">清除</button>
+      <button class="btn primary" id="deal-btn" disabled>发牌</button>
+    </div>
+    <div class="action-area" id="action-area" style="display:none;">
+      <button class="btn" id="hit-btn">要牌 Hit</button>
+      <button class="btn" id="stand-btn">停牌 Stand</button>
+      <button class="btn" id="double-btn">加倍 Double</button>
+      <button class="btn" id="split-btn">分牌 Split</button>
+      <button class="btn insurance" id="insurance-btn" style="display:none;">保险 Insurance</button>
+      <button class="btn danger" id="no-insurance-btn" style="display:none;">不买保险</button>
+    </div>
+  </div>
+</div>
+
+<!-- Card Back Selector Modal -->
+<div class="modal-overlay hidden" id="modal-overlay">
+  <div class="modal">
+    <button class="close-btn" id="modal-close">&times;</button>
+    <h2>选择牌背</h2>
+    <div class="back-grid" id="back-grid"></div>
+    <div class="upload-area">
+      <label class="upload-label" title="上传自定义牌背图片">
+        &#128193; 上传自定义牌背
+        <input type="file" id="custom-back-input" accept="image/*">
+      </label>
+      <button class="reset-back-btn" id="reset-back-btn">恢复默认</button>
+    </div>
+  </div>
+</div>
+
+<!-- Save/Load Modal -->
+<div class="modal-overlay hidden" id="save-modal-overlay">
+  <div class="modal">
+    <button class="close-btn" id="save-modal-close">&times;</button>
+    <h2>存档管理</h2>
+    <div class="save-status" id="save-status"></div>
+    <div class="save-input-row">
+      <input type="text" id="save-name-input" placeholder="输入存档名称..." maxlength="20">
+      <button class="btn btn-sm" id="save-new-btn">保存</button>
+    </div>
+    <div class="save-list" id="save-list"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast">已保存</div>
+
+<script>
+// ============================================================
+// 21点 Blackjack - 游戏引擎
+// ============================================================
+
+const SUITS = ['spades', 'hearts', 'diamonds', 'clubs'];
+const SUIT_SYMBOLS = { spades: '♠', hearts: '♥', diamonds: '♦', clubs: '♣' };
+const SUIT_COLORS = { spades: 'black', hearts: 'red', diamonds: 'red', clubs: 'black' };
+const SUIT_CODES = { spades: 's', hearts: 'h', diamonds: 'd', clubs: 'c' };
+const RANKS = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+
+const NUM_DECKS = 4;
+const RESHUFFLE_THRESHOLD = 52;
+const TOTAL_BACKS = 18; // number of built-in card back designs
+const DEFAULT_BACK = 1;
+
+// ---- Save/Load system (localStorage) ----
+const LS_SAVE_KEY = 'blackjack_saves';
+
+let savesCache = [];
+
+function loadSaves() {
+  try {
+    const raw = localStorage.getItem(LS_SAVE_KEY);
+    savesCache = raw ? JSON.parse(raw) : [];
+  } catch (e) { savesCache = []; }
+}
+
+function persistSaves() {
+  localStorage.setItem(LS_SAVE_KEY, JSON.stringify(savesCache));
+}
+
+function initSaveSystem() {
+  loadSaves();
+  updateSaveIndicator();
+}
+
+function saveGame(name) {
+  const trimmed = name.trim();
+  if (!trimmed) return false;
+  savesCache.push({
+    id: Date.now(),
+    name: trimmed,
+    chips: state.balance,
+    timestamp: new Date().toLocaleString('zh-CN')
+  });
+  persistSaves();
+  updateSaveIndicator();
+  showToast('已保存');
+  return true;
+}
+
+function deleteSave(id) {
+  savesCache = savesCache.filter(s => s.id !== id);
+  persistSaves();
+  updateSaveIndicator();
+  showToast('已保存');
+}
+
+function loadSave(id) {
+  const save = savesCache.find(s => s.id === id);
+  if (!save) return;
+  state.balance = save.chips;
+  resetRound();
+  state.currentBet = 0;
+  state.chipHistory = [];
+  state.message = `已加载存档「${save.name}」— 余额 $${save.chips}`;
+  updateBalance();
+  updateBetButtons();
+  renderAll(false);
+  updateButtons();
+  document.getElementById('deal-btn').disabled = true;
+}
+
+let toastTimer = null;
+
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.opacity = '1';
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.style.opacity = '0'; }, 1500);
+}
+
+function updateSaveChips() {
+  if (savesCache.length === 0) return;
+  if (state.balance <= 0) {
+    savesCache = [];
+    persistSaves();
+    updateSaveIndicator();
+    return;
+  }
+  for (const s of savesCache) {
+    s.chips = state.balance;
+    s.timestamp = new Date().toLocaleString('zh-CN');
+  }
+  persistSaves();
+  updateSaveIndicator();
+  showToast('已保存');
+}
+
+function updateSaveIndicator() {
+  const btn = document.getElementById('save-btn');
+  if (savesCache.length > 0) {
+    btn.classList.add('save-active');
+    btn.title = `已存档 (${savesCache.length} 个存档)`;
+  } else {
+    btn.classList.remove('save-active');
+    btn.title = '存档管理';
+  }
+}
+
+function buildSaveList() {
+  const list = document.getElementById('save-list');
+  const status = document.getElementById('save-status');
+  list.innerHTML = '';
+
+  if (savesCache.length === 0) {
+    status.innerHTML = '暂无存档';
+    return;
+  }
+  status.innerHTML = `共 <span>${savesCache.length}</span> 个存档`;
+
+  savesCache.forEach(s => {
+    const item = document.createElement('div');
+    item.className = 'save-item';
+    item.innerHTML = `
+      <div class="save-info">
+        <div class="save-name">${escapeHtml(s.name)}</div>
+        <div class="save-meta">余额: $${s.chips} &middot; ${s.timestamp}</div>
+      </div>
+      <div class="save-actions">
+        <button class="btn-sm load-save" data-id="${s.id}">读取</button>
+        <button class="btn-sm danger del-save" data-id="${s.id}">删除</button>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+
+  list.querySelectorAll('.load-save').forEach(btn => {
+    btn.addEventListener('click', () => {
+      loadSave(parseInt(btn.dataset.id));
+      closeSaveModal();
+    });
+  });
+  list.querySelectorAll('.del-save').forEach(btn => {
+    btn.addEventListener('click', () => {
+      deleteSave(parseInt(btn.dataset.id));
+      buildSaveList();
+    });
+  });
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function openSaveModal() {
+  buildSaveList();
+  document.getElementById('save-modal-overlay').classList.remove('hidden');
+}
+
+function closeSaveModal() {
+  document.getElementById('save-modal-overlay').classList.add('hidden');
+}
+
+// ---- Card back management ----
+const BACK_STORAGE_KEY = 'blackjack_card_back';
+const CUSTOM_BACK_KEY = 'blackjack_custom_back';
+
+function getSavedBack() {
+  const saved = localStorage.getItem(BACK_STORAGE_KEY);
+  if (saved !== null) {
+    const num = parseInt(saved);
+    if (num >= 1 && num <= TOTAL_BACKS) return num;
+  }
+  return DEFAULT_BACK;
+}
+
+function getCardBackSrc() {
+  const saved = localStorage.getItem(BACK_STORAGE_KEY);
+  if (saved === 'custom') {
+    const custom = localStorage.getItem(CUSTOM_BACK_KEY);
+    if (custom) return custom;
+  }
+  const num = getSavedBack();
+  return `resource/backs/${num}.jpg`;
+}
+
+function getCardFrontSrc(card) {
+  const code = SUIT_CODES[card.suit];
+  return `resource/fronts/${code}${card.rank}.png`;
+}
+
+// ---- Card helpers ----
+function cardValue(rank) {
+  if (rank === 'A') return 11;
+  if (['K','Q','J','10'].includes(rank)) return 10;
+  return parseInt(rank);
+}
+function isTenValue(rank) { return ['10','J','Q','K'].includes(rank); }
+
+// ---- Score calculation ----
+function calcScore(cards) {
+  let score = 0;
+  let aces = 0;
+  for (const c of cards) {
+    if (c.rank === 'A') { aces++; score += 11; }
+    else if (isTenValue(c.rank)) score += 10;
+    else score += parseInt(c.rank);
+  }
+  while (score > 21 && aces > 0) { score -= 10; aces--; }
+  return score;
+}
+
+function isBlackjack(cards) { return cards.length === 2 && calcScore(cards) === 21; }
+function isBust(cards) { return calcScore(cards) > 21; }
+function isSoft(cards) {
+  return cards.some(c => c.rank === 'A') && calcScore(cards) <= 21 &&
+    cards.reduce((s,c) => s + (c.rank==='A'?11:isTenValue(c.rank)?10:parseInt(c.rank)), 0) !== calcScore(cards);
+}
+
+// ---- Deck ----
+function createShoe(numDecks) {
+  const cards = [];
+  for (let d = 0; d < numDecks; d++) {
+    for (const suit of SUITS) {
+      for (const rank of RANKS) {
+        cards.push({ suit, rank });
+      }
+    }
+  }
+  return shuffle(cards);
+}
+
+function shuffle(cards) {
+  const arr = [...cards];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// ============================================================
+// Game State
+// ============================================================
+const state = {
+  shoe: [],
+  dealerCards: [],
+  playerHands: [[]],
+  handBets: [],
+  currentHandIndex: 0,
+  balance: 1000,
+  currentBet: 0,
+  chipHistory: [],  // stack of chip amounts added, for undo
+  insuranceBet: 0,
+  phase: 'betting',
+  message: '请下注开始游戏',
+};
+
+function resetRound() {
+  state.dealerCards = [];
+  state.playerHands = [[]];
+  state.handBets = [];
+  state.currentHandIndex = 0;
+  state.currentBet = 0;
+  state.chipHistory = [];
+  state.insuranceBet = 0;
+  state.phase = 'betting';
+  state.message = '请下注开始游戏';
+}
+
+function needsReshuffle() {
+  return state.shoe.length < RESHUFFLE_THRESHOLD;
+}
+
+function ensureShoe() {
+  if (needsReshuffle()) {
+    state.shoe = createShoe(NUM_DECKS);
+  }
+}
+
+function dealCard() {
+  if (needsReshuffle()) {
+    state.shoe = createShoe(NUM_DECKS);
+  }
+  return state.shoe.pop();
+}
+
+// ============================================================
+// Rendering
+// ============================================================
+function renderCard(card, faceDown = false) {
+  const div = document.createElement('div');
+  div.className = 'card';
+  const img = document.createElement('img');
+  if (faceDown) {
+    img.src = getCardBackSrc();
+    img.alt = '?';
+  } else {
+    img.src = getCardFrontSrc(card);
+    img.alt = `${SUIT_SYMBOLS[card.suit]} ${card.rank}`;
+  }
+  img.onerror = function() {
+    // Fallback: show text if image fails to load
+    div.style.background = faceDown ? '#8b0000' : '#fff';
+    div.style.display = 'flex';
+    div.style.alignItems = 'center';
+    div.style.justifyContent = 'center';
+    div.style.fontWeight = 'bold';
+    div.style.fontSize = '1.5em';
+    div.style.color = SUIT_COLORS[card.suit] === 'red' ? '#c0392b' : '#1a1a1a';
+    div.textContent = faceDown ? '?' : `${card.rank}${SUIT_SYMBOLS[card.suit]}`;
+  };
+  div.appendChild(img);
+  return div;
+}
+
+function renderCards(containerId, cards, hideHole = false) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  cards.forEach((card, i) => {
+    const faceDown = hideHole && i === 1;
+    container.appendChild(renderCard(card, faceDown));
+  });
+}
+
+function renderScore(elementId, cards, hideHole = false) {
+  const el = document.getElementById(elementId);
+  if (cards.length === 0) { el.innerHTML = ''; return; }
+  if (hideHole) {
+    const upCard = cards[0];
+    el.innerHTML = `点数: <span>${cardValue(upCard.rank)}</span> + ?`;
+  } else {
+    const score = calcScore(cards);
+    let extra = '';
+    if (isBlackjack(cards)) extra = ' — <span style="color:#ffd700">Blackjack!</span>';
+    else if (isBust(cards)) extra = ' — <span style="color:#e74c3c">爆牌!</span>';
+    else if (isSoft(cards)) extra = ' <span style="color:#aaa;font-size:0.85em">(软)</span>';
+    el.innerHTML = `点数: <span>${score}</span>${extra}`;
+  }
+}
+
+function renderPlayerHands() {
+  const container = document.getElementById('player-hands');
+  container.innerHTML = '';
+
+  state.playerHands.forEach((hand, idx) => {
+    const group = document.createElement('div');
+    group.className = 'hand-group';
+    if (idx === state.currentHandIndex && state.playerHands.length > 1) {
+      group.classList.add('active');
+    }
+
+    const label = document.createElement('div');
+    label.className = 'hand-label';
+    label.textContent = state.playerHands.length > 1 ? `手牌 ${idx + 1}` : '';
+    group.appendChild(label);
+
+    const row = document.createElement('div');
+    row.className = 'cards-row';
+    hand.forEach(card => row.appendChild(renderCard(card)));
+    group.appendChild(row);
+
+    const scoreDiv = document.createElement('div');
+    scoreDiv.className = 'score';
+    if (hand.length > 0) {
+      const s = calcScore(hand);
+      let extra = '';
+      if (isBlackjack(hand)) extra = ' — <span style="color:#ffd700">Blackjack!</span>';
+      else if (isBust(hand)) extra = ' — <span style="color:#e74c3c">爆牌!</span>';
+      scoreDiv.innerHTML = `点数: <span>${s}</span>${extra}`;
+    }
+    group.appendChild(scoreDiv);
+
+    container.appendChild(group);
+  });
+}
+
+function renderAll(hideDealerHole = false) {
+  renderCards('dealer-cards', state.dealerCards, hideDealerHole);
+  renderScore('dealer-score', state.dealerCards, hideDealerHole);
+  renderPlayerHands();
+  updateBalance();
+  updateMessage();
+  updateButtons();
+}
+
+function updateBalance() {
+  document.getElementById('balance').textContent = state.balance;
+  document.getElementById('bet-display').textContent = state.currentBet;
+}
+
+function updateMessage() {
+  const el = document.getElementById('message');
+  el.textContent = state.message;
+  el.className = 'message';
+  if (state.message.includes('赢')) el.classList.add('win');
+  else if (state.message.includes('输') || state.message.includes('爆')) el.classList.add('lose');
+  else if (state.message.includes('平局')) el.classList.add('push');
+}
+
+function updateButtons() {
+  const betArea = document.getElementById('bet-area');
+  const actionArea = document.getElementById('action-area');
+  const dealBtn = document.getElementById('deal-btn');
+  const hitBtn = document.getElementById('hit-btn');
+  const standBtn = document.getElementById('stand-btn');
+  const doubleBtn = document.getElementById('double-btn');
+  const splitBtn = document.getElementById('split-btn');
+  const insuranceBtn = document.getElementById('insurance-btn');
+  const noInsuranceBtn = document.getElementById('no-insurance-btn');
+  const clearBtn = document.getElementById('clear-bet');
+
+  if (state.phase === 'betting') {
+    betArea.style.display = 'flex';
+    actionArea.style.display = 'none';
+    dealBtn.disabled = state.currentBet <= 0 || state.currentBet > state.balance;
+    clearBtn.disabled = state.currentBet <= 0;
+  } else if (state.phase === 'insurance') {
+    betArea.style.display = 'none';
+    actionArea.style.display = 'flex';
+    hitBtn.style.display = 'none';
+    standBtn.style.display = 'none';
+    doubleBtn.style.display = 'none';
+    splitBtn.style.display = 'none';
+    insuranceBtn.style.display = 'inline-block';
+    noInsuranceBtn.style.display = 'inline-block';
+  } else if (state.phase === 'player_turn') {
+    betArea.style.display = 'none';
+    actionArea.style.display = 'flex';
+    insuranceBtn.style.display = 'none';
+    noInsuranceBtn.style.display = 'none';
+
+    const hand = state.playerHands[state.currentHandIndex];
+    const score = calcScore(hand);
+    const isSplitHand = state.playerHands.length > 1;
+    const isSplitAces = isSplitHand && hand.length === 1 && hand[0].rank === 'A';
+
+    hitBtn.style.display = (score < 21 && !isSplitAces) ? 'inline-block' : 'none';
+    standBtn.style.display = 'inline-block';
+    const canDouble = hand.length === 2 && state.balance >= state.currentBet;
+    doubleBtn.style.display = (canDouble && score < 21) ? 'inline-block' : 'none';
+    doubleBtn.disabled = !canDouble;
+    const canSplit = hand.length === 2 &&
+      cardValue(hand[0].rank) === cardValue(hand[1].rank) &&
+      state.balance >= state.currentBet &&
+      state.playerHands.length < 4;
+    splitBtn.style.display = (!isSplitHand && canSplit) ? 'inline-block' : 'none';
+  } else {
+    betArea.style.display = 'flex';
+    actionArea.style.display = 'none';
+    dealBtn.disabled = state.currentBet <= 0 || state.currentBet > state.balance;
+  }
+}
+
+// ============================================================
+// Game Flow
+// ============================================================
+function startDeal() {
+  if (state.currentBet <= 0) return;
+
+  ensureShoe();
+  state.dealerCards = [dealCard(), dealCard()];
+  state.playerHands = [[dealCard(), dealCard()]];
+  state.handBets = [state.currentBet];
+  state.currentHandIndex = 0;
+  state.insuranceBet = 0;
+
+  if (state.dealerCards[0].rank === 'A' && state.balance >= Math.ceil(state.currentBet / 2)) {
+    state.phase = 'insurance';
+    state.message = '庄家明牌为A，是否购买保险？';
+    renderAll(true);
+    return;
+  }
+
+  proceedAfterInsurance();
+}
+
+function buyInsurance() {
+  const maxInsurance = Math.ceil(state.currentBet / 2);
+  state.insuranceBet = Math.min(maxInsurance, state.balance);
+  state.balance -= state.insuranceBet;
+  proceedAfterInsurance();
+}
+
+function declineInsurance() {
+  state.insuranceBet = 0;
+  proceedAfterInsurance();
+}
+
+function proceedAfterInsurance() {
+  const dealerUp = state.dealerCards[0];
+  const dealerHole = state.dealerCards[1];
+  const dealerHasBJ = (dealerUp.rank === 'A' && isTenValue(dealerHole.rank)) ||
+                       (isTenValue(dealerUp.rank) && dealerHole.rank === 'A');
+  const playerHasBJ = isBlackjack(state.playerHands[0]);
+
+  if (dealerHasBJ || playerHasBJ) {
+    state.phase = 'settlement';
+
+    if (dealerHasBJ && playerHasBJ) {
+      state.message = '双方都是 Blackjack — 平局！';
+      state.balance += state.currentBet;
+      if (state.insuranceBet > 0) {
+        const win = state.insuranceBet * 3;
+        state.balance += win;
+        state.message += ` 保险赢 $${win - state.insuranceBet}`;
+      }
+    } else if (dealerHasBJ) {
+      state.message = '庄家 Blackjack！';
+      if (state.insuranceBet > 0) {
+        const win = state.insuranceBet * 3;
+        state.balance += win;
+        state.message += ` 保险赢 $${win - state.insuranceBet}`;
+      }
+    } else if (playerHasBJ) {
+      const win = Math.floor(state.currentBet * 1.5);
+      state.balance += state.currentBet + win;
+      state.message = `Blackjack! 赢得 $${win} (3:2)`;
+    }
+
+    if (state.insuranceBet > 0 && !dealerHasBJ) {
+      state.message += ' 保险注输。';
+    }
+
+    updateSaveChips();
+    renderAll(false);
+    autoNewRound();
+    return;
+  }
+
+  state.phase = 'player_turn';
+  if (state.insuranceBet > 0) {
+    state.message = '保险注输 — 你的回合，请选择操作';
+  } else {
+    state.message = '你的回合 — 请选择操作';
+  }
+  renderAll(true);
+  updateButtons();
+}
+
+function hit() {
+  if (state.phase !== 'player_turn') return;
+  const hand = state.playerHands[state.currentHandIndex];
+  hand.push(dealCard());
+
+  const score = calcScore(hand);
+  if (score > 21) {
+    state.message = `爆牌 (${score}点)!`;
+    renderAll(true);
+    finishCurrentHand();
+  } else if (score === 21) {
+    state.message = '21点! 自动停牌';
+    renderAll(true);
+    finishCurrentHand();
+  } else {
+    state.message = `你的回合 — ${score}点，继续要牌还是停牌？`;
+    renderAll(true);
+  }
+}
+
+function stand() {
+  if (state.phase !== 'player_turn') return;
+  state.message = '停牌 — 换下一手或庄家回合';
+  renderAll(true);
+  finishCurrentHand();
+}
+
+function doubleDown() {
+  if (state.phase !== 'player_turn') return;
+  const hand = state.playerHands[state.currentHandIndex];
+  if (hand.length !== 2) return;
+  const handBet = state.handBets[state.currentHandIndex];
+  if (state.balance < handBet) return;
+
+  state.balance -= handBet;
+  state.handBets[state.currentHandIndex] *= 2;
+  hand.push(dealCard());
+
+  const score = calcScore(hand);
+  if (score > 21) {
+    state.message = `加倍后爆牌 (${score}点)!`;
+  } else {
+    state.message = `加倍 — ${score}点`;
+  }
+  renderAll(true);
+  finishCurrentHand();
+}
+
+function split() {
+  if (state.phase !== 'player_turn') return;
+  const hand = state.playerHands[state.currentHandIndex];
+  if (hand.length !== 2) return;
+  if (cardValue(hand[0].rank) !== cardValue(hand[1].rank)) return;
+  if (state.balance < state.currentBet) return;
+  if (state.playerHands.length >= 4) return;
+
+  state.balance -= state.currentBet;
+  const card1 = hand.pop();
+  const card2 = hand.pop();
+  state.playerHands[state.currentHandIndex] = [card1, dealCard()];
+  state.playerHands.splice(state.currentHandIndex + 1, 0, [card2, dealCard()]);
+  state.handBets.splice(state.currentHandIndex + 1, 0, state.currentBet);
+
+  state.message = `分牌 — 当前第 ${state.currentHandIndex + 1} 手`;
+  renderAll(false);
+
+  if (card1.rank === 'A') {
+    state.message = '分牌A — 每手只补一张牌，自动停牌';
+    renderAll(false);
+    setTimeout(() => {
+      finishCurrentHand();
+    }, 800);
+    return;
+  }
+
+  updateButtons();
+}
+
+function finishCurrentHand() {
+  if (state.currentHandIndex < state.playerHands.length - 1) {
+    state.currentHandIndex++;
+    const hand = state.playerHands[state.currentHandIndex];
+    const score = calcScore(hand);
+
+    if (score >= 21) {
+      if (score > 21) state.message = `手牌 ${state.currentHandIndex + 1} 爆牌!`;
+      else state.message = `手牌 ${state.currentHandIndex + 1}: 21点`;
+      renderAll(true);
+      setTimeout(() => finishCurrentHand(), 800);
+      return;
+    }
+
+    state.message = `手牌 ${state.currentHandIndex + 1}: ${score}点 — 请选择操作`;
+    renderAll(true);
+    updateButtons();
+    return;
+  }
+
+  playDealer();
+}
+
+function playDealer() {
+  state.phase = 'dealer_turn';
+  renderAll(false);
+
+  function dealerDraw() {
+    const score = calcScore(state.dealerCards);
+    if (score < 17) {
+      state.dealerCards.push(dealCard());
+      state.message = `庄家要牌 — ${calcScore(state.dealerCards)}点`;
+      renderAll(false);
+      setTimeout(() => dealerDraw(), 600);
+    } else {
+      settleAll();
+    }
+  }
+
+  state.message = `庄家翻牌 — ${calcScore(state.dealerCards)}点`;
+  renderAll(false);
+  setTimeout(() => dealerDraw(), 800);
+}
+
+function settleAll() {
+  state.phase = 'settlement';
+  const dealerScore = calcScore(state.dealerCards);
+  const dealerBust = dealerScore > 21;
+  const dealerBJ = isBlackjack(state.dealerCards);
+
+  let totalWin = 0;
+  const results = [];
+
+  state.playerHands.forEach((hand, idx) => {
+    const score = calcScore(hand);
+    const bust = score > 21;
+    const bj = isBlackjack(hand) && state.playerHands.length === 1;
+    const bet = state.handBets[idx];
+    const prefix = state.playerHands.length > 1 ? `手牌${idx + 1}: ` : '';
+
+    if (bust) {
+      results.push(`${prefix}爆牌 输 $${bet}`);
+    } else if (bj && dealerBJ) {
+      results.push(`${prefix}双方BJ 平局`);
+      totalWin += bet;
+    } else if (bj) {
+      const win = Math.floor(bet * 1.5);
+      results.push(`${prefix}Blackjack! 赢 $${win}`);
+      totalWin += bet + win;
+    } else if (dealerBust) {
+      results.push(`${prefix}庄家爆牌 赢 $${bet}`);
+      totalWin += bet * 2;
+    } else if (score > dealerScore) {
+      results.push(`${prefix}${score} vs ${dealerScore} 赢 $${bet}`);
+      totalWin += bet * 2;
+    } else if (score < dealerScore) {
+      results.push(`${prefix}${score} vs ${dealerScore} 输 $${bet}`);
+    } else {
+      results.push(`${prefix}${score} vs ${dealerScore} 平局`);
+      totalWin += bet;
+    }
+  });
+
+  state.balance += totalWin;
+  updateSaveChips();
+  state.message = results.join(' | ');
+
+  const totalBet = state.handBets.reduce((s, b) => s + b, 0);
+  if (totalWin > totalBet) {
+    state.message = '🎉 ' + state.message;
+  }
+
+  renderAll(false);
+  autoNewRound();
+}
+
+function autoNewRound() {
+  setTimeout(() => {
+    resetRound();
+    ensureShoe();
+    if (state.balance <= 0) {
+      state.balance = 1000;
+      state.message = '余额不足，已自动重置为 $1000。请下注！';
+    } else {
+      state.message = '请下注开始下一局';
+    }
+    renderAll(false);
+    updateButtons();
+
+    state.currentBet = 0;
+    state.chipHistory = [];
+    updateBalance();
+    document.getElementById('deal-btn').disabled = true;
+  }, 2500);
+}
+
+// ============================================================
+// Card Back Selector
+// ============================================================
+function buildBackGrid() {
+  const grid = document.getElementById('back-grid');
+  grid.innerHTML = '';
+  const current = localStorage.getItem(BACK_STORAGE_KEY);
+  const currentNum = getSavedBack();
+
+  for (let i = 1; i <= TOTAL_BACKS; i++) {
+    const opt = document.createElement('div');
+    opt.className = 'back-option';
+    if (current === 'custom') {
+      // no built-in selected
+    } else if (i === currentNum) {
+      opt.classList.add('selected');
+    }
+    opt.title = `牌背 ${i}`;
+    const img = document.createElement('img');
+    img.src = `resource/backs/${i}.jpg`;
+    img.alt = `牌背 ${i}`;
+    img.onerror = function() { this.alt = '加载失败'; };
+    opt.appendChild(img);
+    opt.addEventListener('click', () => selectBack(i));
+    grid.appendChild(opt);
+  }
+}
+
+function selectBack(num) {
+  localStorage.setItem(BACK_STORAGE_KEY, num);
+  localStorage.removeItem(CUSTOM_BACK_KEY);
+  buildBackGrid();
+  refreshAllCards();
+}
+
+function handleCustomBack(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const dataUrl = e.target.result;
+    localStorage.setItem(BACK_STORAGE_KEY, 'custom');
+    localStorage.setItem(CUSTOM_BACK_KEY, dataUrl);
+    buildBackGrid();
+    refreshAllCards();
+  };
+  reader.readAsDataURL(file);
+}
+
+function resetBack() {
+  localStorage.removeItem(BACK_STORAGE_KEY);
+  localStorage.removeItem(CUSTOM_BACK_KEY);
+  buildBackGrid();
+  refreshAllCards();
+}
+
+function refreshAllCards() {
+  // Re-render all card images with the new back
+  renderAll(state.phase === 'player_turn' || state.phase === 'insurance' || (state.phase === 'betting' && state.dealerCards.length === 0));
+  // For betting or settlement phase, show all cards face up
+  if (state.phase === 'betting' || state.phase === 'settlement') {
+    renderAll(false);
+  }
+}
+
+// ============================================================
+// Event Handlers
+// ============================================================
+function updateBetButtons() {
+  const dealBtn = document.getElementById('deal-btn');
+  const clearBtn = document.getElementById('clear-bet');
+  const allinBtn = document.getElementById('allin-btn');
+  dealBtn.disabled = state.currentBet <= 0 || state.currentBet > state.balance;
+  clearBtn.disabled = state.currentBet <= 0;
+  allinBtn.disabled = state.balance <= 0;
+}
+
+document.querySelectorAll('.chip-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (state.phase !== 'betting') return;
+    const amount = parseInt(btn.dataset.amount);
+    const newBet = state.currentBet + amount;
+    if (newBet <= state.balance) {
+      state.currentBet = newBet;
+      state.chipHistory.push(amount);
+    }
+    updateBalance();
+    updateBetButtons();
+  });
+  // right-click to remove one chip of this denomination
+  btn.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    if (state.phase !== 'betting') return;
+    const amount = parseInt(btn.dataset.amount);
+    const idx = state.chipHistory.lastIndexOf(amount);
+    if (idx !== -1 && state.currentBet >= amount) {
+      state.currentBet -= amount;
+      state.chipHistory.splice(idx, 1);
+    }
+    updateBalance();
+    updateBetButtons();
+  });
+});
+
+document.getElementById('allin-btn').addEventListener('click', () => {
+  if (state.phase !== 'betting') return;
+  if (state.balance <= 0) return;
+  state.currentBet = state.balance;
+  state.chipHistory = [];
+  updateBalance();
+  updateBetButtons();
+});
+
+document.getElementById('clear-bet').addEventListener('click', () => {
+  if (state.phase !== 'betting') return;
+  if (state.currentBet <= 0) return;
+  state.currentBet = 0;
+  state.chipHistory = [];
+  updateBalance();
+  updateBetButtons();
+});
+
+document.getElementById('deal-btn').addEventListener('click', () => {
+  if (state.phase !== 'betting') return;
+  if (state.currentBet <= 0) return;
+  state.balance -= state.currentBet;
+  startDeal();
+});
+
+document.getElementById('hit-btn').addEventListener('click', hit);
+document.getElementById('stand-btn').addEventListener('click', stand);
+document.getElementById('double-btn').addEventListener('click', doubleDown);
+document.getElementById('split-btn').addEventListener('click', split);
+document.getElementById('insurance-btn').addEventListener('click', buyInsurance);
+document.getElementById('no-insurance-btn').addEventListener('click', declineInsurance);
+
+// Card back modal
+document.getElementById('settings-btn').addEventListener('click', () => {
+  buildBackGrid();
+  document.getElementById('modal-overlay').classList.remove('hidden');
+});
+
+document.getElementById('modal-close').addEventListener('click', () => {
+  document.getElementById('modal-overlay').classList.add('hidden');
+});
+
+document.getElementById('modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) {
+    this.classList.add('hidden');
+  }
+});
+
+document.getElementById('custom-back-input').addEventListener('change', function() {
+  if (this.files && this.files[0]) {
+    handleCustomBack(this.files[0]);
+  }
+  this.value = '';
+});
+
+document.getElementById('reset-back-btn').addEventListener('click', resetBack);
+
+// Save/Load modal
+document.getElementById('save-btn').addEventListener('click', openSaveModal);
+
+document.getElementById('save-modal-close').addEventListener('click', closeSaveModal);
+
+document.getElementById('save-modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeSaveModal();
+});
+
+document.getElementById('save-new-btn').addEventListener('click', () => {
+  const input = document.getElementById('save-name-input');
+  const name = input.value.trim();
+  if (!name) {
+    input.focus();
+    return;
+  }
+  if (state.balance <= 0) {
+    state.message = '余额为0，无法存档';
+    updateMessage();
+    return;
+  }
+  saveGame(name);
+  input.value = '';
+  buildSaveList();
+  state.message = `存档「${name}」已保存 — 余额 $${state.balance}`;
+  updateMessage();
+});
+
+document.getElementById('save-name-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    document.getElementById('save-new-btn').click();
+  }
+});
+
+
+
+// Quit game
+document.getElementById('quit-btn').addEventListener('click', () => {
+  if (confirm('确定要退出游戏吗？\n\n退出前请确认已存档。')) {
+    if (state.balance > 0 && getSaves().length === 0) {
+      const doSave = confirm('你还没有存档，是否保存当前进度后再退出？');
+      if (doSave) {
+        openSaveModal();
+        return;
+      }
+    }
+    document.body.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:center;height:100vh;
+        background:#0d3b1a;color:#f0e6d3;font-family:Georgia,serif;text-align:center;">
+        <div>
+          <h1 style="color:#d4a843;font-size:2.5em;margin-bottom:16px;">感谢游玩！</h1>
+          <p style="color:#c0a878;font-size:1.1em;">欢迎再来 &spades; &clubs; &hearts; &diams;</p>
+          <button onclick="location.reload()" style="margin-top:24px;padding:10px 30px;
+            border-radius:24px;border:2px solid #d4a843;background:#2a1f14;color:#f0d080;
+            font-size:1em;cursor:pointer;font-family:inherit;">重新开始</button>
+        </div>
+      </div>`;
+  }
+});
+
+// ============================================================
+// Init
+// ============================================================
+function init() {
+  state.shoe = createShoe(NUM_DECKS);
+  resetRound();
+  initSaveSystem();
+  renderAll(false);
+  updateButtons();
+  document.getElementById('deal-btn').disabled = true;
+}
+
+init();
+</script>
+</body>
+</html>
