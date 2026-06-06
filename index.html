@@ -123,6 +123,24 @@
     border-radius: 6px;
   }
 
+  .card.dealing {
+    animation: cardEnter 0.2s ease-out;
+  }
+  @keyframes cardEnter {
+    0%   { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .card.dealing.flipping,
+  .card.flipping {
+    animation: dealFlip 0.35s ease-out;
+  }
+  @keyframes dealFlip {
+    0%   { transform: rotateY(0deg); }
+    45%  { transform: rotateY(90deg); }
+    55%  { transform: rotateY(90deg); }
+    100% { transform: rotateY(0deg); }
+  }
+
   /* === SCORE === */
   .score {
     font-size: 1em;
@@ -344,37 +362,6 @@
     display: block;
   }
 
-  .upload-area {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-  .upload-label {
-    cursor: pointer;
-    padding: 8px 18px;
-    border-radius: 20px;
-    border: 2px dashed #c0a878;
-    color: #c0a878;
-    font-size: 0.9em;
-    transition: all 0.15s;
-    display: inline-block;
-  }
-  .upload-label:hover { border-color: #ffd700; color: #ffd700; }
-  .upload-label input { display: none; }
-  .reset-back-btn {
-    background: none;
-    border: 1px solid #e74c3c;
-    color: #e74c3c;
-    padding: 6px 14px;
-    border-radius: 14px;
-    cursor: pointer;
-    font-size: 0.85em;
-    transition: all 0.15s;
-  }
-  .reset-back-btn:hover { background: #e74c3c; color: #fff; }
-
   /* === SAVE MODAL === */
   .save-status {
     text-align: center;
@@ -443,6 +430,114 @@
   .btn-sm.danger { border-color: #e74c3c; color: #e74c3c; }
   .btn-sm.danger:hover { background: #e74c3c; color: #fff; }
 
+  /* === RULES MODAL === */
+  .rules-modal {
+    max-width: 620px;
+  }
+  .rules-content {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 8px;
+  }
+  .rules-content::-webkit-scrollbar {
+    width: 5px;
+  }
+  .rules-content::-webkit-scrollbar-thumb {
+    background: #4a3728;
+    border-radius: 4px;
+  }
+  .rules-section {
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #2a4a2a;
+  }
+  .rules-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+  .rules-section h3 {
+    color: #d4a843;
+    font-size: 1em;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  .rules-section p {
+    color: #c0b890;
+    font-size: 0.9em;
+    line-height: 1.7;
+    margin: 0;
+  }
+  .rules-steps {
+    padding-left: 20px;
+    margin: 0;
+    color: #c0b890;
+    font-size: 0.9em;
+    line-height: 1.8;
+  }
+  .rules-steps li {
+    margin-bottom: 4px;
+  }
+  .rules-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+  }
+  .rules-table td,
+  .rules-table th {
+    padding: 6px 10px;
+    text-align: left;
+    border-bottom: 1px solid #2a4a2a;
+    color: #c0b890;
+  }
+  .rules-table th {
+    color: #d4a843;
+    font-size: 0.85em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .rules-table td:first-child {
+    white-space: nowrap;
+    font-weight: bold;
+  }
+  .rules-table .win { color: #2ecc71; font-weight: bold; }
+  .rules-table .lose { color: #e74c3c; font-weight: bold; }
+  .rules-action {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 6px 0;
+    border-bottom: 1px dotted #2a4a2a;
+    font-size: 0.88em;
+    color: #b0a880;
+    line-height: 1.6;
+  }
+  .rules-action:last-child {
+    border-bottom: none;
+  }
+  .rules-action-name {
+    flex-shrink: 0;
+    min-width: 120px;
+    color: #f0d080;
+    font-weight: bold;
+  }
+  .rules-tip {
+    background: rgba(255,215,0,0.06);
+    border: 1px solid #3a4a2a;
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .rules-tip ul {
+    padding-left: 18px;
+    margin: 0;
+    color: #a0b090;
+    font-size: 0.88em;
+    line-height: 1.7;
+  }
+  .rules-tip li {
+    margin-bottom: 3px;
+  }
+
   /* === RESPONSIVE === */
   @media (max-width: 600px) {
     .table { border-radius: 40px; padding: 20px 15px; }
@@ -454,6 +549,9 @@
     .header h1 { font-size: 1.5em; }
     .back-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
     .header-icon-btn { width: 30px; height: 30px; font-size: 0.9em; }
+    .rules-action { flex-direction: column; gap: 2px; }
+    .rules-action-name { min-width: auto; }
+    .rules-modal { max-width: 95vw; }
   }
 
   /* === TOAST === */
@@ -477,6 +575,7 @@
     <h1>&spades; 21点 &nbsp;BLACKJACK &clubs;</h1>
     <div class="balance">余额: $<span id="balance">1000</span></div>
     <div class="header-btns">
+      <button class="header-icon-btn" id="rules-btn" title="规则介绍">&#9432;</button>
       <button class="header-icon-btn" id="save-btn" title="存档管理">&#128190;</button>
       <button class="header-icon-btn" id="settings-btn" title="牌背设置">&#9881;</button>
       <button class="header-icon-btn quit-btn" id="quit-btn" title="退出游戏">&#10005;</button>
@@ -528,19 +627,94 @@
   </div>
 </div>
 
+<!-- Rules Modal -->
+<div class="modal-overlay hidden" id="rules-modal-overlay">
+  <div class="modal rules-modal">
+    <button class="close-btn" id="rules-modal-close">&times;</button>
+    <h2>&#9432; 游戏规则</h2>
+    <div class="rules-content">
+      <div class="rules-section">
+        <h3>🎯 游戏目标</h3>
+        <p>让你的手牌点数尽可能<strong>接近21点</strong>，但不能超过21点（超过就叫"爆牌"）。<br>你只需要和庄家比大小——<strong>比庄家大就赢，比庄家小就输</strong>，一样大算平局。</p>
+      </div>
+
+      <div class="rules-section">
+        <h3>🃏 牌面点数</h3>
+        <table class="rules-table">
+          <tr><td>数字牌 2~10</td><td>= 牌面数字</td></tr>
+          <tr><td>J、Q、K（人头牌）</td><td>= 10点</td></tr>
+          <tr><td>A</td><td>= 1点 或 11点（自动取对你最有利的值）</td></tr>
+        </table>
+      </div>
+
+      <div class="rules-section">
+        <h3>🎮 游戏流程</h3>
+        <ol class="rules-steps">
+          <li><strong>下注</strong> → 点击筹码按钮，决定这局押多少</li>
+          <li><strong>发牌</strong> → 你和庄家各发2张牌，庄家只有1张明牌可见</li>
+          <li><strong>操作</strong> → 根据手牌选择要牌、停牌、加倍或分牌</li>
+          <li><strong>庄家回合</strong> → 庄家翻开暗牌，不到17点必须继续要牌</li>
+          <li><strong>结算</strong> → 比较点数，决定输赢</li>
+        </ol>
+      </div>
+
+      <div class="rules-section">
+        <h3>🕹️ 操作说明</h3>
+        <div class="rules-action">
+          <span class="rules-action-name">🃏 要牌 Hit</span>
+          <span>再拿一张牌。可以多次要牌，直到满意或爆牌为止。</span>
+        </div>
+        <div class="rules-action">
+          <span class="rules-action-name">✋ 停牌 Stand</span>
+          <span>保持当前点数，不再要牌，轮到庄家行动。</span>
+        </div>
+        <div class="rules-action">
+          <span class="rules-action-name">💰 加倍 Double</span>
+          <span>追加一倍赌注，但<strong>只能再拿一张牌</strong>，然后自动停牌。<br>（仅限手牌刚好2张时使用）</span>
+        </div>
+        <div class="rules-action">
+          <span class="rules-action-name">✂️ 分牌 Split</span>
+          <span>当两张牌点数相同时，可以拆成<strong>两手独立的手牌</strong>，每手追加一份赌注。<br>最多可分3次（共4手）。分A后每手只补一张牌。</span>
+        </div>
+        <div class="rules-action">
+          <span class="rules-action-name">🛡️ 保险 Insurance</span>
+          <span>当庄家明牌是<strong>A</strong>时，你可以额外下注（最多为原赌注的一半），赌庄家有Blackjack。<br>如果庄家真是Blackjack，保险赢；不是则保险注输掉。</span>
+        </div>
+      </div>
+
+      <div class="rules-section">
+        <h3>💵 赔率说明</h3>
+        <table class="rules-table rules-payout">
+          <thead><tr><th>情况</th><th>赔率</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td>普通赢</td><td class="win">1 : 1</td><td>你的点数大于庄家（未爆牌），赢回等额赌注</td></tr>
+            <tr><td>Blackjack</td><td class="win">3 : 2</td><td>起手两张牌直接21点（A+花牌/10），赢1.5倍赌注</td></tr>
+            <tr><td>庄家爆牌</td><td class="win">1 : 1</td><td>庄家点数超过21点，你自动获胜</td></tr>
+            <tr><td>保险赢</td><td class="win">2 : 1</td><td>庄家Blackjack时，保险注赢2倍（等于净赚1倍）</td></tr>
+            <tr><td>平局 Push</td><td>—</td><td>你和庄家点数相同，退回赌注，不输不赢</td></tr>
+            <tr><td>输</td><td class="lose">-1 : 1</td><td>点数小于庄家或自己爆牌，输掉赌注</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="rules-section rules-tip">
+        <h3>💡 小贴士</h3>
+        <ul>
+          <li>庄家必须遵守"<strong>17点规则</strong>"——不到17点必须继续要牌，达到17点及以上必须停牌</li>
+          <li><strong>软牌</strong>（含有A且A算11点不会爆）比硬牌更灵活，可以大胆要牌</li>
+          <li>余额不足时会自动重置为 $1000，放心玩！</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Card Back Selector Modal -->
 <div class="modal-overlay hidden" id="modal-overlay">
   <div class="modal">
     <button class="close-btn" id="modal-close">&times;</button>
     <h2>选择牌背</h2>
     <div class="back-grid" id="back-grid"></div>
-    <div class="upload-area">
-      <label class="upload-label" title="上传自定义牌背图片">
-        &#128193; 上传自定义牌背
-        <input type="file" id="custom-back-input" accept="image/*">
-      </label>
-      <button class="reset-back-btn" id="reset-back-btn">恢复默认</button>
-    </div>
   </div>
 </div>
 
@@ -730,7 +904,6 @@ function closeSaveModal() {
 
 // ---- Card back management ----
 const BACK_STORAGE_KEY = 'blackjack_card_back';
-const CUSTOM_BACK_KEY = 'blackjack_custom_back';
 
 function getSavedBack() {
   const saved = localStorage.getItem(BACK_STORAGE_KEY);
@@ -742,11 +915,6 @@ function getSavedBack() {
 }
 
 function getCardBackSrc() {
-  const saved = localStorage.getItem(BACK_STORAGE_KEY);
-  if (saved === 'custom') {
-    const custom = localStorage.getItem(CUSTOM_BACK_KEY);
-    if (custom) return custom;
-  }
   const num = getSavedBack();
   return `resource/backs/${num}.jpg`;
 }
@@ -881,6 +1049,37 @@ function renderCard(card, faceDown = false) {
   return div;
 }
 
+function renderCardDealt(card, faceDown = false) {
+  const div = document.createElement('div');
+  div.className = 'card dealing';
+  const img = document.createElement('img');
+  img.src = getCardBackSrc();
+  img.alt = '?';
+  img.onerror = function() {
+    div.style.background = faceDown ? '#8b0000' : '#fff';
+    div.style.display = 'flex';
+    div.style.alignItems = 'center';
+    div.style.justifyContent = 'center';
+    div.style.fontWeight = 'bold';
+    div.style.fontSize = '1.5em';
+    div.style.color = SUIT_COLORS[card.suit] === 'red' ? '#c0392b' : '#1a1a1a';
+    div.textContent = faceDown ? '?' : `${card.rank}${SUIT_SYMBOLS[card.suit]}`;
+  };
+  div.appendChild(img);
+  if (!faceDown) {
+    // Wait 0.5s showing the back, then flip to front
+    setTimeout(() => {
+      div.classList.add('flipping');
+      // Swap image mid-animation when card is edge-on
+      setTimeout(() => {
+        img.src = getCardFrontSrc(card);
+        img.alt = `${SUIT_SYMBOLS[card.suit]} ${card.rank}`;
+      }, 160);
+    }, 500);
+  }
+  return div;
+}
+
 function renderCards(containerId, cards, hideHole = false) {
   const container = document.getElementById(containerId);
   container.innerHTML = '';
@@ -977,7 +1176,10 @@ function updateButtons() {
   const noInsuranceBtn = document.getElementById('no-insurance-btn');
   const clearBtn = document.getElementById('clear-bet');
 
-  if (state.phase === 'betting') {
+  if (state.phase === 'dealing') {
+    betArea.style.display = 'none';
+    actionArea.style.display = 'none';
+  } else if (state.phase === 'betting') {
     betArea.style.display = 'flex';
     actionArea.style.display = 'none';
     dealBtn.disabled = state.currentBet <= 0 || state.currentBet > state.balance;
@@ -1026,20 +1228,109 @@ function startDeal() {
   if (state.currentBet <= 0) return;
 
   ensureShoe();
-  state.dealerCards = [dealCard(), dealCard()];
-  state.playerHands = [[dealCard(), dealCard()]];
+
+  // Pre-draw all 4 cards
+  const pCard1 = dealCard();
+  const dCard1 = dealCard();
+  const pCard2 = dealCard();
+  const dCard2 = dealCard();
+
+  // Initialize state
+  state.dealerCards = [];
+  state.playerHands = [[]];
   state.handBets = [state.currentBet];
   state.currentHandIndex = 0;
   state.insuranceBet = 0;
+  state.phase = 'dealing';
 
-  if (state.dealerCards[0].rank === 'A' && state.balance >= Math.ceil(state.currentBet / 2)) {
-    state.phase = 'insurance';
-    state.message = '庄家明牌为A，是否购买保险？';
-    renderAll(true);
-    return;
+  // Clear and prepare display
+  document.getElementById('dealer-cards').innerHTML = '';
+  document.getElementById('dealer-score').innerHTML = '';
+  const phContainer = document.getElementById('player-hands');
+  phContainer.innerHTML = '';
+  const group = document.createElement('div');
+  group.className = 'hand-group';
+  const pRow = document.createElement('div');
+  pRow.className = 'cards-row';
+  group.appendChild(pRow);
+  const pScoreDiv = document.createElement('div');
+  pScoreDiv.className = 'score';
+  pScoreDiv.id = 'player-score-0';
+  group.appendChild(pScoreDiv);
+  phContainer.appendChild(group);
+
+  updateButtons();
+  updateBalance();
+  state.message = '发牌中...';
+  updateMessage();
+
+  function updateDealerScoreEl(hideHole) {
+    const el = document.getElementById('dealer-score');
+    if (state.dealerCards.length === 0) { el.innerHTML = ''; return; }
+    if (hideHole) {
+      const upCard = state.dealerCards[0];
+      el.innerHTML = `点数: <span>${cardValue(upCard.rank)}</span> + ?`;
+    } else {
+      const score = calcScore(state.dealerCards);
+      let extra = '';
+      if (isBlackjack(state.dealerCards)) extra = ' — <span style="color:#ffd700">Blackjack!</span>';
+      else if (isBust(state.dealerCards)) extra = ' — <span style="color:#e74c3c">爆牌!</span>';
+      el.innerHTML = `点数: <span>${score}</span>${extra}`;
+    }
   }
 
-  proceedAfterInsurance();
+  function updatePlayerScoreEl() {
+    const el = document.getElementById('player-score-0');
+    if (!el) return;
+    const hand = state.playerHands[0];
+    if (hand.length > 0) {
+      const s = calcScore(hand);
+      let extra = '';
+      if (isBlackjack(hand)) extra = ' — <span style="color:#ffd700">Blackjack!</span>';
+      else if (isBust(hand)) extra = ' — <span style="color:#e74c3c">爆牌!</span>';
+      el.innerHTML = `点数: <span>${s}</span>${extra}`;
+    }
+  }
+
+  // Sequential dealing with 0.5s intervals
+  // Step 1: Player card 1 (face up, animated) — 0.5s
+  setTimeout(() => {
+    state.playerHands[0].push(pCard1);
+    pRow.appendChild(renderCardDealt(pCard1, false));
+    updatePlayerScoreEl();
+
+    // Step 2: Dealer card 1 (face up, animated) — 1.0s
+    setTimeout(() => {
+      state.dealerCards.push(dCard1);
+      document.getElementById('dealer-cards').appendChild(renderCardDealt(dCard1, false));
+      updateDealerScoreEl(true);
+
+      // Step 3: Player card 2 (face up, animated) — 1.5s
+      setTimeout(() => {
+        state.playerHands[0].push(pCard2);
+        pRow.appendChild(renderCardDealt(pCard2, false));
+        updatePlayerScoreEl();
+
+        // Step 4: Dealer card 2 (face down, no flip) — 2.0s
+        setTimeout(() => {
+          state.dealerCards.push(dCard2);
+          document.getElementById('dealer-cards').appendChild(renderCardDealt(dCard2, true));
+          updateDealerScoreEl(true);
+
+          // Check for insurance / proceed
+          if (state.dealerCards[0].rank === 'A' && state.balance >= Math.ceil(state.currentBet / 2)) {
+            state.phase = 'insurance';
+            state.message = '庄家明牌为A，是否购买保险？';
+            updateMessage();
+            updateButtons();
+            return;
+          }
+
+          proceedAfterInsurance();
+        }, 500);
+      }, 500);
+    }, 500);
+  }, 500);
 }
 
 function buyInsurance() {
@@ -1105,23 +1396,90 @@ function proceedAfterInsurance() {
   updateButtons();
 }
 
+// ---- DOM helpers for inline card dealing ----
+function getPlayerCardsRow(handIndex) {
+  const rows = document.querySelectorAll('#player-hands .cards-row');
+  return rows[handIndex] || null;
+}
+
+function getPlayerScoreEl(handIndex) {
+  const groups = document.querySelectorAll('#player-hands .hand-group');
+  if (handIndex < groups.length) {
+    return groups[handIndex].querySelector('.score');
+  }
+  return null;
+}
+
+function updatePlayerScoreInline(handIndex) {
+  const hand = state.playerHands[handIndex];
+  const el = getPlayerScoreEl(handIndex);
+  if (!el || hand.length === 0) return;
+  const s = calcScore(hand);
+  let extra = '';
+  if (isBlackjack(hand)) extra = ' — <span style="color:#ffd700">Blackjack!</span>';
+  else if (isBust(hand)) extra = ' — <span style="color:#e74c3c">爆牌!</span>';
+  el.innerHTML = `点数: <span>${s}</span>${extra}`;
+}
+
+function updateDealerScoreInline() {
+  const el = document.getElementById('dealer-score');
+  if (state.dealerCards.length === 0) { el.innerHTML = ''; return; }
+  const score = calcScore(state.dealerCards);
+  let extra = '';
+  if (isBlackjack(state.dealerCards)) extra = ' — <span style="color:#ffd700">Blackjack!</span>';
+  else if (isBust(state.dealerCards)) extra = ' — <span style="color:#e74c3c">爆牌!</span>';
+  el.innerHTML = `点数: <span>${score}</span>${extra}`;
+}
+
+function flipHoleCard() {
+  // Flip the dealer's face-down hole card (second card) to reveal the front
+  const dealerCards = document.querySelectorAll('#dealer-cards .card');
+  if (dealerCards.length >= 2) {
+    const holeEl = dealerCards[1];
+    const img = holeEl.querySelector('img');
+    const card = state.dealerCards[1];
+    holeEl.classList.add('flipping');
+    setTimeout(() => {
+      if (img) {
+        img.src = getCardFrontSrc(card);
+        img.alt = `${SUIT_SYMBOLS[card.suit]} ${card.rank}`;
+      }
+    }, 160);
+  }
+}
+
 function hit() {
   if (state.phase !== 'player_turn') return;
+  state.phase = 'dealing';
+  updateButtons();
   const hand = state.playerHands[state.currentHandIndex];
-  hand.push(dealCard());
+  const newCard = dealCard();
+  hand.push(newCard);
+
+  // Append animated card to DOM
+  const row = getPlayerCardsRow(state.currentHandIndex);
+  if (row) {
+    row.appendChild(renderCardDealt(newCard, false));
+  }
+  updatePlayerScoreInline(state.currentHandIndex);
 
   const score = calcScore(hand);
   if (score > 21) {
     state.message = `爆牌 (${score}点)!`;
-    renderAll(true);
-    finishCurrentHand();
+    updateMessage();
+    setTimeout(() => finishCurrentHand(), 900);
   } else if (score === 21) {
     state.message = '21点! 自动停牌';
-    renderAll(true);
-    finishCurrentHand();
+    updateMessage();
+    setTimeout(() => finishCurrentHand(), 900);
   } else {
     state.message = `你的回合 — ${score}点，继续要牌还是停牌？`;
-    renderAll(true);
+    updateMessage();
+    // Wait for flip animation, then re-enable buttons
+    setTimeout(() => {
+      state.phase = 'player_turn';
+      updateButtons();
+    }, 900);
   }
 }
 
@@ -1139,9 +1497,20 @@ function doubleDown() {
   const handBet = state.handBets[state.currentHandIndex];
   if (state.balance < handBet) return;
 
+  state.phase = 'dealing';
+  updateButtons();
   state.balance -= handBet;
   state.handBets[state.currentHandIndex] *= 2;
-  hand.push(dealCard());
+  updateBalance();
+  const newCard = dealCard();
+  hand.push(newCard);
+
+  // Append animated card to DOM
+  const row = getPlayerCardsRow(state.currentHandIndex);
+  if (row) {
+    row.appendChild(renderCardDealt(newCard, false));
+  }
+  updatePlayerScoreInline(state.currentHandIndex);
 
   const score = calcScore(hand);
   if (score > 21) {
@@ -1149,8 +1518,8 @@ function doubleDown() {
   } else {
     state.message = `加倍 — ${score}点`;
   }
-  renderAll(true);
-  finishCurrentHand();
+  updateMessage();
+  setTimeout(() => finishCurrentHand(), 900);
 }
 
 function split() {
@@ -1208,23 +1577,33 @@ function finishCurrentHand() {
 
 function playDealer() {
   state.phase = 'dealer_turn';
-  renderAll(false);
+  state.message = `庄家翻牌 — ${calcScore(state.dealerCards)}点`;
+  updateMessage();
+  updateButtons();
+
+  // Animate the hole card flipping from back to front
+  flipHoleCard();
+  updateDealerScoreInline();
 
   function dealerDraw() {
     const score = calcScore(state.dealerCards);
     if (score < 17) {
-      state.dealerCards.push(dealCard());
+      const newCard = dealCard();
+      state.dealerCards.push(newCard);
+      // Append animated card to dealer's row
+      document.getElementById('dealer-cards').appendChild(renderCardDealt(newCard, false));
+      updateDealerScoreInline();
       state.message = `庄家要牌 — ${calcScore(state.dealerCards)}点`;
-      renderAll(false);
-      setTimeout(() => dealerDraw(), 600);
+      updateMessage();
+      // Wait for flip animation (0.5s delay + 0.35s flip = ~0.9s)
+      setTimeout(() => dealerDraw(), 900);
     } else {
       settleAll();
     }
   }
 
-  state.message = `庄家翻牌 — ${calcScore(state.dealerCards)}点`;
-  renderAll(false);
-  setTimeout(() => dealerDraw(), 800);
+  // Wait for hole card flip to complete, then start drawing
+  setTimeout(() => dealerDraw(), 600);
 }
 
 function settleAll() {
@@ -1311,9 +1690,7 @@ function buildBackGrid() {
   for (let i = 1; i <= TOTAL_BACKS; i++) {
     const opt = document.createElement('div');
     opt.className = 'back-option';
-    if (current === 'custom') {
-      // no built-in selected
-    } else if (i === currentNum) {
+    if (i === currentNum) {
       opt.classList.add('selected');
     }
     opt.title = `牌背 ${i}`;
@@ -1329,27 +1706,6 @@ function buildBackGrid() {
 
 function selectBack(num) {
   localStorage.setItem(BACK_STORAGE_KEY, num);
-  localStorage.removeItem(CUSTOM_BACK_KEY);
-  buildBackGrid();
-  refreshAllCards();
-}
-
-function handleCustomBack(file) {
-  if (!file || !file.type.startsWith('image/')) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const dataUrl = e.target.result;
-    localStorage.setItem(BACK_STORAGE_KEY, 'custom');
-    localStorage.setItem(CUSTOM_BACK_KEY, dataUrl);
-    buildBackGrid();
-    refreshAllCards();
-  };
-  reader.readAsDataURL(file);
-}
-
-function resetBack() {
-  localStorage.removeItem(BACK_STORAGE_KEY);
-  localStorage.removeItem(CUSTOM_BACK_KEY);
   buildBackGrid();
   refreshAllCards();
 }
@@ -1434,6 +1790,21 @@ document.getElementById('split-btn').addEventListener('click', split);
 document.getElementById('insurance-btn').addEventListener('click', buyInsurance);
 document.getElementById('no-insurance-btn').addEventListener('click', declineInsurance);
 
+// Rules modal
+document.getElementById('rules-btn').addEventListener('click', () => {
+  document.getElementById('rules-modal-overlay').classList.remove('hidden');
+});
+
+document.getElementById('rules-modal-close').addEventListener('click', () => {
+  document.getElementById('rules-modal-overlay').classList.add('hidden');
+});
+
+document.getElementById('rules-modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) {
+    this.classList.add('hidden');
+  }
+});
+
 // Card back modal
 document.getElementById('settings-btn').addEventListener('click', () => {
   buildBackGrid();
@@ -1449,15 +1820,6 @@ document.getElementById('modal-overlay').addEventListener('click', function(e) {
     this.classList.add('hidden');
   }
 });
-
-document.getElementById('custom-back-input').addEventListener('change', function() {
-  if (this.files && this.files[0]) {
-    handleCustomBack(this.files[0]);
-  }
-  this.value = '';
-});
-
-document.getElementById('reset-back-btn').addEventListener('click', resetBack);
 
 // Save/Load modal
 document.getElementById('save-btn').addEventListener('click', openSaveModal);
