@@ -66,7 +66,7 @@
   }
   .header-icon-btn:hover { color: #ffd700; border-color: #ffd700; }
   .header-icon-btn.save-active { color: #2ecc71; border-color: #2ecc71; }
-  .header-icon-btn.quit-btn:hover { color: #e74c3c; border-color: #e74c3c; }
+  .header-icon-btn.history-btn:hover { color: #3498db; border-color: #3498db; }
 
   /* === TABLE === */
   .table {
@@ -214,7 +214,12 @@
   .chip-10 { background: #2980b9; color: #fff; }
   .chip-25 { background: #27ae60; color: #fff; }
   .chip-50 { background: #f39c12; color: #fff; }
-  .chip-100{ background: #1a1a1a; color: #ffd700; border-color: #ffd700; }
+  .chip-100 { background: #1a1a1a; color: #ffd700; border-color: #ffd700; }
+	  .chip-500 { background: #8e44ad; color: #fff; }
+	  .chip-2000 { background: #16a085; color: #fff; }
+	  .chip-10000 { background: #e91e63; color: #fff; }
+	  .chip-50000 { background: #607d8b; color: #fff; }
+	  .chip-200000 { background: #c0392b; color: #ffd700; border-color: #ffd700; }
 
   .btn {
     padding: 10px 24px;
@@ -241,8 +246,6 @@
     background: linear-gradient(180deg, #d4a843, #b8922e);
     color: #1a1a1a;
     border-color: #ffd700;
-    font-size: 1.1em;
-    padding: 12px 36px;
   }
   .btn.danger {
     border-color: #e74c3c;
@@ -259,8 +262,6 @@
     border-color: #ffd700;
     color: #ffd700;
     background: linear-gradient(180deg, #3a2a10, #1a1000);
-    font-size: 0.9em;
-    padding: 10px 16px;
   }
   .btn.allin:hover:not(:disabled) {
     border-color: #fff;
@@ -415,6 +416,7 @@
     margin-top: 2px;
   }
   .save-item .save-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .save-item.save-item-active { border-color: #ffd700; background: rgba(255,215,0,0.06); }
   .btn-sm {
     padding: 4px 12px;
     border-radius: 12px;
@@ -538,6 +540,60 @@
     margin-bottom: 3px;
   }
 
+  /* === HISTORY / CHART MODAL === */
+  .history-modal {
+    max-width: 700px;
+  }
+  .chart-wrapper {
+    position: relative;
+    width: 100%;
+    min-height: 320px;
+  }
+  .chart-wrapper canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .history-summary {
+    display: flex;
+    justify-content: space-around;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid #2a4a2a;
+    flex-wrap: wrap;
+  }
+  .history-stat {
+    text-align: center;
+  }
+  .history-stat .stat-label {
+    font-size: 0.8em;
+    color: #8a9a7a;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .history-stat .stat-value {
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #f0d080;
+    margin-top: 2px;
+  }
+  .history-stat .stat-value.up { color: #2ecc71; }
+  .history-stat .stat-value.down { color: #e74c3c; }
+  .history-empty {
+    text-align: center;
+    color: #8a9a7a;
+    padding: 40px 20px;
+    font-size: 0.95em;
+    line-height: 1.8;
+  }
+  .history-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 14px;
+  }
+
   /* === RESPONSIVE === */
   @media (max-width: 600px) {
     .table { border-radius: 40px; padding: 20px 15px; }
@@ -545,7 +601,6 @@
     .cards-row { min-height: 90px; }
     .chip-btn { width: 40px; height: 40px; font-size: 0.8em; }
     .btn { padding: 8px 16px; font-size: 0.85em; }
-    .btn.primary { padding: 10px 24px; font-size: 1em; }
     .header h1 { font-size: 1.5em; }
     .back-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
     .header-icon-btn { width: 30px; height: 30px; font-size: 0.9em; }
@@ -575,10 +630,10 @@
     <h1>&spades; 21点 &nbsp;BLACKJACK &clubs;</h1>
     <div class="balance">余额: $<span id="balance">1000</span></div>
     <div class="header-btns">
-      <button class="header-icon-btn" id="rules-btn" title="规则介绍">&#9432;</button>
+      <button class="header-icon-btn history-btn" id="history-btn" title="盈亏记录">&#128200;</button>
       <button class="header-icon-btn" id="save-btn" title="存档管理">&#128190;</button>
       <button class="header-icon-btn" id="settings-btn" title="牌背设置">&#9881;</button>
-      <button class="header-icon-btn quit-btn" id="quit-btn" title="退出游戏">&#10005;</button>
+      <button class="header-icon-btn" id="rules-btn" title="规则介绍">&#9432;</button>
     </div>
   </div>
 
@@ -612,9 +667,14 @@
       <button class="chip-btn chip-25" data-amount="25">$25</button>
       <button class="chip-btn chip-50" data-amount="50">$50</button>
       <button class="chip-btn chip-100" data-amount="100">$100</button>
+	      <button class="chip-btn chip-500" data-amount="500">$500</button>
+	      <button class="chip-btn chip-2000" data-amount="2000">$2K</button>
+	      <button class="chip-btn chip-10000" data-amount="10000">$10K</button>
+	      <button class="chip-btn chip-50000" data-amount="50000">$50K</button>
+	      <button class="chip-btn chip-200000" data-amount="200000">$200K</button>
 	      <button class="btn allin" id="allin-btn">ALL IN</button>
       <button class="btn danger" id="clear-bet">清除</button>
-      <button class="btn primary" id="deal-btn" disabled>发牌</button>
+      <button class="btn primary" id="deal-btn" disabled>下注</button>
     </div>
     <div class="action-area" id="action-area" style="display:none;">
       <button class="btn" id="hit-btn">要牌 Hit</button>
@@ -732,6 +792,45 @@
   </div>
 </div>
 
+<!-- Profit/Loss History Modal -->
+<div class="modal-overlay hidden" id="history-modal-overlay">
+  <div class="modal history-modal">
+    <button class="close-btn" id="history-modal-close">&times;</button>
+    <h2>&#128200; 盈亏记录</h2>
+    <div class="chart-wrapper" id="chart-wrapper">
+      <canvas id="history-canvas"></canvas>
+    </div>
+    <div class="history-empty" id="history-empty" style="display:none;">
+      暂无游戏记录<br>开始游戏后，每局结束时的余额将自动记录在这里
+    </div>
+    <div class="history-summary" id="history-summary" style="display:none;">
+      <div class="history-stat">
+        <div class="stat-label">游戏局数</div>
+        <div class="stat-value" id="stat-games">0</div>
+      </div>
+      <div class="history-stat">
+        <div class="stat-label">当前余额</div>
+        <div class="stat-value" id="stat-balance">$1000</div>
+      </div>
+      <div class="history-stat">
+        <div class="stat-label">最高余额</div>
+        <div class="stat-value up" id="stat-peak">$1000</div>
+      </div>
+      <div class="history-stat">
+        <div class="stat-label">输光次数</div>
+        <div class="stat-value down" id="stat-busts">0</div>
+      </div>
+      <div class="history-stat">
+        <div class="stat-label">总盈亏</div>
+        <div class="stat-value" id="stat-net">$0</div>
+      </div>
+    </div>
+    <div class="history-actions">
+      <button class="btn btn-sm danger" id="history-clear-btn">清除记录</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast">已保存</div>
 
 <script>
@@ -768,27 +867,48 @@ function persistSaves() {
 
 function initSaveSystem() {
   loadSaves();
+  /* Auto-create ENTERNAL save if no saves exist */
+  if (savesCache.length === 0) {
+    const eternalId = Date.now();
+    savesCache.push({
+      id: eternalId,
+      name: 'ENTERNAL',
+      chips: state.balance,
+      timestamp: new Date().toLocaleString('zh-CN'),
+      eternal: true
+    });
+    persistSaves();
+    bindHistoryToSave(eternalId);
+  }
   updateSaveIndicator();
 }
 
 function saveGame(name) {
   const trimmed = name.trim();
   if (!trimmed) return false;
+  const newId = Date.now();
   savesCache.push({
-    id: Date.now(),
+    id: newId,
     name: trimmed,
     chips: state.balance,
     timestamp: new Date().toLocaleString('zh-CN')
   });
   persistSaves();
+  bindHistoryToSave(newId);
   updateSaveIndicator();
   showToast('已保存');
   return true;
 }
 
 function deleteSave(id) {
+  const save = savesCache.find(s => s.id === id);
+  if (save && save.eternal) {
+    showToast('ENTERNAL 存档不可删除');
+    return;
+  }
   savesCache = savesCache.filter(s => s.id !== id);
   persistSaves();
+  deleteSaveHistory(id);
   updateSaveIndicator();
   showToast('已保存');
 }
@@ -797,6 +917,7 @@ function loadSave(id) {
   const save = savesCache.find(s => s.id === id);
   if (!save) return;
   state.balance = save.chips;
+  switchToSaveHistory(id);
   resetRound();
   state.currentBet = 0;
   state.chipHistory = [];
@@ -806,6 +927,7 @@ function loadSave(id) {
   renderAll(false);
   updateButtons();
   document.getElementById('deal-btn').disabled = true;
+  updateSaveIndicator();
 }
 
 let toastTimer = null;
@@ -819,30 +941,35 @@ function showToast(msg) {
 }
 
 function updateSaveChips() {
-  if (savesCache.length === 0) return;
-  if (state.balance <= 0) {
-    savesCache = [];
-    persistSaves();
-    updateSaveIndicator();
-    return;
-  }
-  for (const s of savesCache) {
-    s.chips = state.balance;
-    s.timestamp = new Date().toLocaleString('zh-CN');
-  }
+  if (activeSaveId === null) return;
+  const save = savesCache.find(s => s.id === activeSaveId);
+  if (!save) return;
+  /* Update save chips even when balance is 0 — no longer delete saves */
+  save.chips = state.balance;
+  save.timestamp = new Date().toLocaleString('zh-CN');
   persistSaves();
   updateSaveIndicator();
   showToast('已保存');
 }
 
 function updateSaveIndicator() {
-  const btn = document.getElementById('save-btn');
+  const saveBtn = document.getElementById('save-btn');
+  const histBtn = document.getElementById('history-btn');
   if (savesCache.length > 0) {
-    btn.classList.add('save-active');
-    btn.title = `已存档 (${savesCache.length} 个存档)`;
+    saveBtn.classList.add('save-active');
+    saveBtn.title = `已存档 (${savesCache.length} 个存档)`;
   } else {
-    btn.classList.remove('save-active');
-    btn.title = '存档管理';
+    saveBtn.classList.remove('save-active');
+    saveBtn.title = '存档管理';
+  }
+  /* Update history button indicator */
+  const activeName = getActiveSaveName();
+  if (activeName) {
+    histBtn.classList.add('save-active');
+    histBtn.title = `盈亏记录 — 当前存档: ${activeName}`;
+  } else {
+    histBtn.classList.remove('save-active');
+    histBtn.title = '盈亏记录';
   }
 }
 
@@ -859,15 +986,16 @@ function buildSaveList() {
 
   savesCache.forEach(s => {
     const item = document.createElement('div');
-    item.className = 'save-item';
+    const isActive = s.id === activeSaveId;
+    item.className = 'save-item' + (isActive ? ' save-item-active' : '');
     item.innerHTML = `
       <div class="save-info">
-        <div class="save-name">${escapeHtml(s.name)}</div>
+        <div class="save-name">${escapeHtml(s.name)}${s.eternal ? ' <span style="color:#d4a843;font-size:0.7em;">🔒</span>' : ''}${isActive ? ' <span style="color:#ffd700;font-size:0.75em;">◀ 当前</span>' : ''}</div>
         <div class="save-meta">余额: $${s.chips} &middot; ${s.timestamp}</div>
       </div>
       <div class="save-actions">
         <button class="btn-sm load-save" data-id="${s.id}">读取</button>
-        <button class="btn-sm danger del-save" data-id="${s.id}">删除</button>
+        ${s.eternal ? '' : `<button class="btn-sm danger del-save" data-id="${s.id}">删除</button>`}
       </div>
     `;
     list.appendChild(item);
@@ -881,7 +1009,15 @@ function buildSaveList() {
   });
   list.querySelectorAll('.del-save').forEach(btn => {
     btn.addEventListener('click', () => {
-      deleteSave(parseInt(btn.dataset.id));
+      const saveId = parseInt(btn.dataset.id);
+      const save = savesCache.find(s => s.id === saveId);
+      const saveName = save ? save.name : '此存档';
+      if (!confirm(`确定要删除存档「${saveName}」吗？
+
+删除后该存档的盈亏记录也将被清除，且不可恢复。`)) {
+        return;
+      }
+      deleteSave(saveId);
       buildSaveList();
     });
   });
@@ -1380,6 +1516,14 @@ function proceedAfterInsurance() {
       state.message += ' 保险注输。';
     }
 
+    // Record balance history for BJ settlement
+    if (dealerHasBJ && playerHasBJ) {
+      recordBalance('push');
+    } else if (dealerHasBJ) {
+      recordBalance(state.insuranceBet > 0 ? 'lose_insured' : 'lose');
+    } else {
+      recordBalance('bj_win');
+    }
     updateSaveChips();
     renderAll(false);
     autoNewRound();
@@ -1647,9 +1791,11 @@ function settleAll() {
 
   state.balance += totalWin;
   updateSaveChips();
+  const totalBet = state.handBets.reduce((s, b) => s + b, 0);
+  // Record balance history
+  recordBalance(totalWin > totalBet ? 'win' : totalWin < totalBet ? 'lose' : 'push');
   state.message = results.join(' | ');
 
-  const totalBet = state.handBets.reduce((s, b) => s + b, 0);
   if (totalWin > totalBet) {
     state.message = '🎉 ' + state.message;
   }
@@ -1664,6 +1810,14 @@ function autoNewRound() {
     ensureShoe();
     if (state.balance <= 0) {
       state.balance = 1000;
+      // Record the reset in history
+      balanceHistory.push({
+        game: balanceHistory.length + 1,
+        balance: state.balance,
+        timestamp: new Date().toLocaleString('zh-CN'),
+        result: 'reset'
+      });
+      persistHistory();
       state.message = '余额不足，已自动重置为 $1000。请下注！';
     } else {
       state.message = '请下注开始下一局';
@@ -1857,28 +2011,400 @@ document.getElementById('save-name-input').addEventListener('keydown', (e) => {
 
 
 
-// Quit game
-document.getElementById('quit-btn').addEventListener('click', () => {
-  if (confirm('确定要退出游戏吗？\n\n退出前请确认已存档。')) {
-    if (state.balance > 0 && getSaves().length === 0) {
-      const doSave = confirm('你还没有存档，是否保存当前进度后再退出？');
-      if (doSave) {
-        openSaveModal();
-        return;
-      }
+// ---- Balance History System (per-save) ----
+const LS_HISTORIES_KEY = 'blackjack_balance_histories';
+const LS_ACTIVE_SAVE_KEY = 'blackjack_active_save';
+
+let balanceHistories = {};  // { [saveId]: [ ...entries ] }
+let activeSaveId = null;     // null = unsaved session, or save id number
+let balanceHistory = [];     // convenience ref to the currently active history array
+
+function loadHistory() {
+  try {
+    const raw = localStorage.getItem(LS_HISTORIES_KEY);
+    balanceHistories = raw ? JSON.parse(raw) : {};
+  } catch (e) { balanceHistories = {}; }
+  try {
+    const saved = localStorage.getItem(LS_ACTIVE_SAVE_KEY);
+    activeSaveId = saved ? parseInt(saved) : null;
+    // Verify the active save still exists
+    if (activeSaveId !== null && !savesCache.some(s => s.id === activeSaveId)) {
+      activeSaveId = null;
     }
-    document.body.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:center;height:100vh;
-        background:#0d3b1a;color:#f0e6d3;font-family:Georgia,serif;text-align:center;">
-        <div>
-          <h1 style="color:#d4a843;font-size:2.5em;margin-bottom:16px;">感谢游玩！</h1>
-          <p style="color:#c0a878;font-size:1.1em;">欢迎再来 &spades; &clubs; &hearts; &diams;</p>
-          <button onclick="location.reload()" style="margin-top:24px;padding:10px 30px;
-            border-radius:24px;border:2px solid #d4a843;background:#2a1f14;color:#f0d080;
-            font-size:1em;cursor:pointer;font-family:inherit;">重新开始</button>
-        </div>
-      </div>`;
+  } catch (e) { activeSaveId = null; }
+  _syncActiveHistory();
+}
+
+function _syncActiveHistory() {
+  const key = activeSaveId !== null ? String(activeSaveId) : '_unsaved_';
+  if (!balanceHistories[key]) {
+    balanceHistories[key] = [];
   }
+  balanceHistory = balanceHistories[key];
+}
+
+function persistHistory() {
+  localStorage.setItem(LS_HISTORIES_KEY, JSON.stringify(balanceHistories));
+  localStorage.setItem(LS_ACTIVE_SAVE_KEY, activeSaveId !== null ? String(activeSaveId) : '');
+}
+
+function _getActiveKey() {
+  return activeSaveId !== null ? String(activeSaveId) : '_unsaved_';
+}
+
+function recordBalance(resultLabel) {
+  balanceHistory.push({
+    game: balanceHistory.length + 1,
+    balance: state.balance,
+    timestamp: new Date().toLocaleString('zh-CN'),
+    result: resultLabel || ''
+  });
+  // Keep max 500 entries per history to avoid localStorage bloat
+  if (balanceHistory.length > 500) {
+    const trimmed = balanceHistory.slice(-500);
+    trimmed.forEach((e, i) => { e.game = i + 1; });
+    balanceHistories[_getActiveKey()] = trimmed;
+    balanceHistory = trimmed;
+  }
+  persistHistory();
+}
+
+// ---- History-save binding ----
+
+function bindHistoryToSave(saveId) {
+  /* New save always starts with a fresh independent history */
+  const newKey = String(saveId);
+  balanceHistories[newKey] = [];
+  activeSaveId = saveId;
+  balanceHistory = balanceHistories[newKey];
+  persistHistory();
+}
+
+function switchToSaveHistory(saveId) {
+  const key = String(saveId);
+  if (!balanceHistories[key]) {
+    balanceHistories[key] = [];
+  }
+  activeSaveId = saveId;
+  balanceHistory = balanceHistories[key];
+  persistHistory();
+}
+
+function deleteSaveHistory(saveId) {
+  const key = String(saveId);
+  delete balanceHistories[key];
+  if (activeSaveId === saveId) {
+    activeSaveId = null;
+    balanceHistory = balanceHistories['_unsaved_'] || [];
+  }
+  persistHistory();
+}
+
+
+function getActiveSaveName() {
+  if (activeSaveId === null) return null;
+  const save = savesCache.find(s => s.id === activeSaveId);
+  return save ? save.name : null;
+}
+
+// ---- Chart drawing ----
+
+function drawChart(canvas, data) {
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const W = rect.width;
+  const H = 320;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.scale(dpr, dpr);
+
+  const pad = { top: 30, right: 20, bottom: 40, left: 60 };
+  const plotW = W - pad.left - pad.right;
+  const plotH = H - pad.top - pad.bottom;
+
+  if (data.length === 0) return;
+
+  let minVal = Infinity, maxVal = -Infinity;
+  data.forEach(d => {
+    if (d.balance < minVal) minVal = d.balance;
+    if (d.balance > maxVal) maxVal = d.balance;
+  });
+  const rangePad = Math.max((maxVal - minVal) * 0.1, 50);
+  minVal = Math.max(0, minVal - rangePad);
+  maxVal = maxVal + rangePad;
+  const roughStep = (maxVal - minVal) / 5;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(roughStep)));
+  const niceStep = Math.ceil(roughStep / magnitude) * magnitude;
+  minVal = Math.floor(minVal / niceStep) * niceStep;
+  maxVal = Math.ceil(maxVal / niceStep) * niceStep;
+
+  const xScale = (i) => pad.left + (i / Math.max(data.length - 1, 1)) * plotW;
+  const yScale = (v) => pad.top + plotH - ((v - minVal) / (maxVal - minVal)) * plotH;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Background
+  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  ctx.fillRect(pad.left, pad.top, plotW, plotH);
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+  ctx.lineWidth = 1;
+  for (let v = minVal; v <= maxVal; v += niceStep) {
+    const y = yScale(v);
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(pad.left + plotW, y);
+    ctx.stroke();
+  }
+
+  // Reference line at 1000
+  if (minVal <= 1000 && maxVal >= 1000) {
+    const refY = yScale(1000);
+    ctx.strokeStyle = 'rgba(255,215,0,0.35)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([6, 4]);
+    ctx.beginPath();
+    ctx.moveTo(pad.left, refY);
+    ctx.lineTo(pad.left + plotW, refY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(255,215,0,0.7)';
+    ctx.font = '10px Georgia, serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('$1000', pad.left + 4, refY - 4);
+  }
+
+  // Y-axis labels
+  ctx.fillStyle = '#8a9a7a';
+  ctx.font = '10px Georgia, serif';
+  ctx.textAlign = 'right';
+  for (let v = minVal; v <= maxVal; v += niceStep) {
+    const y = yScale(v);
+    ctx.fillText('$' + v, pad.left - 6, y + 4);
+  }
+
+  // X-axis labels
+  ctx.textAlign = 'center';
+  const xLabelInterval = data.length <= 20 ? 1 : Math.ceil(data.length / 15);
+  data.forEach((d, i) => {
+    if (i % xLabelInterval === 0 || i === data.length - 1) {
+      const x = xScale(i);
+      ctx.fillText(d.game, x, pad.top + plotH + 18);
+    }
+  });
+
+  // X-axis title
+  ctx.fillStyle = '#8a9a7a';
+  ctx.font = '11px Georgia, serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('游戏局数', pad.left + plotW / 2, pad.top + plotH + 34);
+
+  // ---- Filled area ----
+  const gradient = ctx.createLinearGradient(0, pad.top, 0, pad.top + plotH);
+  gradient.addColorStop(0, 'rgba(46,204,113,0.35)');
+  gradient.addColorStop(0.5, 'rgba(46,204,113,0.10)');
+  gradient.addColorStop(1, 'rgba(231,76,60,0.10)');
+
+  ctx.beginPath();
+  ctx.moveTo(xScale(0), pad.top + plotH);
+  data.forEach((d, i) => { ctx.lineTo(xScale(i), yScale(d.balance)); });
+  ctx.lineTo(xScale(data.length - 1), pad.top + plotH);
+  ctx.closePath();
+  ctx.fillStyle = gradient;
+  ctx.fill();
+
+  // ---- Line ----
+  ctx.beginPath();
+  ctx.strokeStyle = '#f0d080';
+  ctx.lineWidth = 2;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  data.forEach((d, i) => {
+    const x = xScale(i);
+    const y = yScale(d.balance);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // ---- Data points ----
+  const pointRadius = data.length <= 30 ? 4 : (data.length <= 80 ? 3 : (data.length <= 200 ? 2 : 1.5));
+  data.forEach((d, i) => {
+    if (data.length > 100 && i % Math.ceil(data.length / 80) !== 0 && i !== data.length - 1) return;
+    const x = xScale(i);
+    const y = yScale(d.balance);
+    const isUp = d.balance >= 1000;
+    ctx.beginPath();
+    ctx.arc(x, y, pointRadius, 0, Math.PI * 2);
+    ctx.fillStyle = isUp ? '#2ecc71' : '#e74c3c';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  });
+
+  canvas._chartData = { data, xScale, yScale, pad, plotW, plotH, W, H };
+}
+
+// ---- Modal ----
+
+function openHistoryModal() {
+  _syncActiveHistory();
+  buildHistoryModal();
+  document.getElementById('history-modal-overlay').classList.remove('hidden');
+}
+
+function closeHistoryModal() {
+  document.getElementById('history-modal-overlay').classList.add('hidden');
+}
+
+function buildHistoryModal() {
+  const emptyEl = document.getElementById('history-empty');
+  const summaryEl = document.getElementById('history-summary');
+  const canvas = document.getElementById('history-canvas');
+  const wrapper = document.getElementById('chart-wrapper');
+
+  if (balanceHistory.length === 0) {
+    emptyEl.style.display = 'block';
+    summaryEl.style.display = 'none';
+    wrapper.style.display = 'none';
+    // Update empty message based on save state
+    const saveName = getActiveSaveName();
+    if (saveName) {
+      emptyEl.innerHTML = `存档「${escapeHtml(saveName)}」暂无游戏记录<br>开始游戏后，每局结束时的余额将自动记录在这里`;
+    } else {
+      emptyEl.innerHTML = '暂无游戏记录<br>开始游戏后，每局结束时的余额将自动记录在这里<br><small style="color:#8a9a7a">提示：创建存档后可独立追踪每个存档的盈亏</small>';
+    }
+    return;
+  }
+
+  emptyEl.style.display = 'none';
+  summaryEl.style.display = 'flex';
+  wrapper.style.display = 'block';
+
+  drawChart(canvas, balanceHistory);
+
+  document.getElementById('stat-games').textContent = balanceHistory.length;
+  document.getElementById('stat-balance').textContent = '$' + state.balance;
+
+  let peak = -Infinity;
+  let bustCount = 0;
+  balanceHistory.forEach(d => {
+    if (d.balance > peak) peak = d.balance;
+    if (d.result === 'reset') bustCount++;
+  });
+  document.getElementById('stat-peak').textContent = '$' + peak;
+  document.getElementById('stat-busts').textContent = bustCount;
+  document.getElementById('stat-busts').className = bustCount > 0 ? 'stat-value down' : 'stat-value';
+
+  const net = state.balance - 1000 - (bustCount * 1000);
+  const netEl = document.getElementById('stat-net');
+  netEl.textContent = (net >= 0 ? '$+' : '-$') + Math.abs(net);
+  netEl.className = net >= 0 ? 'stat-value up' : 'stat-value down';
+}
+
+// ---- Resize ----
+let historyResizeTimer = null;
+window.addEventListener('resize', () => {
+  const overlay = document.getElementById('history-modal-overlay');
+  if (overlay.classList.contains('hidden')) return;
+  if (balanceHistory.length === 0) return;
+  if (historyResizeTimer) clearTimeout(historyResizeTimer);
+  historyResizeTimer = setTimeout(() => {
+    drawChart(document.getElementById('history-canvas'), balanceHistory);
+  }, 150);
+});
+
+// ---- Hover tooltip ----
+document.addEventListener('mousemove', function(e) {
+  const overlay = document.getElementById('history-modal-overlay');
+  if (overlay.classList.contains('hidden')) return;
+  const canvas = document.getElementById('history-canvas');
+  const cd = canvas._chartData;
+  if (!cd || cd.data.length === 0) return;
+
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+
+  let nearest = null;
+  let nearestDist = Infinity;
+  cd.data.forEach((d, i) => {
+    const px = cd.xScale(i);
+    const py = cd.yScale(d.balance);
+    const dist = Math.sqrt((mx - px) ** 2 + (my - py) ** 2);
+    if (dist < nearestDist) { nearestDist = dist; nearest = { d, i, px, py }; }
+  });
+
+  const ctx = canvas.getContext('2d');
+  drawChart(canvas, cd.data);
+
+  if (nearest && nearestDist < 30) {
+    const { d, px, py } = nearest;
+    ctx.beginPath();
+    ctx.arc(px, py, 6, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffd700';
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    const tipW = 140, tipH = 50;
+    let tipX = px - tipW / 2;
+    if (tipX < 5) tipX = 5;
+    if (tipX + tipW > cd.W - 5) tipX = cd.W - tipW - 5;
+    const tipY = py - tipH - 14;
+    const tipYFinal = tipY < 5 ? py + 14 : tipY;
+
+    ctx.fillStyle = 'rgba(20,40,20,0.92)';
+    ctx.strokeStyle = '#d4a843';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    const r = 6;
+    ctx.moveTo(tipX + r, tipYFinal);
+    ctx.lineTo(tipX + tipW - r, tipYFinal);
+    ctx.arcTo(tipX + tipW, tipYFinal, tipX + tipW, tipYFinal + r, r);
+    ctx.lineTo(tipX + tipW, tipYFinal + tipH - r);
+    ctx.arcTo(tipX + tipW, tipYFinal + tipH, tipX + tipW - r, tipYFinal + tipH, r);
+    ctx.lineTo(tipX + r, tipYFinal + tipH);
+    ctx.arcTo(tipX, tipYFinal + tipH, tipX, tipYFinal + tipH - r, r);
+    ctx.lineTo(tipX, tipYFinal + r);
+    ctx.arcTo(tipX, tipYFinal, tipX + r, tipYFinal, r);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#f0d080';
+    ctx.font = 'bold 12px Georgia, serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`第 ${d.game} 局`, tipX + tipW / 2, tipYFinal + 18);
+    ctx.fillStyle = d.balance >= 1000 ? '#2ecc71' : '#e74c3c';
+    ctx.fillText(`余额: $${d.balance}`, tipX + tipW / 2, tipYFinal + 36);
+  }
+});
+
+// ---- Clear history ----
+document.getElementById('history-clear-btn').addEventListener('click', () => {
+  if (confirm('确定要清除当前存档的盈亏记录吗？此操作不可撤销。')) {
+    balanceHistory.length = 0;
+    balanceHistories[_getActiveKey()] = [];
+    persistHistory();
+    buildHistoryModal();
+    showToast('记录已清除');
+  }
+});
+
+// ---- Modal open/close ----
+document.getElementById('history-btn').addEventListener('click', openHistoryModal);
+document.getElementById('history-modal-close').addEventListener('click', closeHistoryModal);
+document.getElementById('history-modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeHistoryModal();
 });
 
 // ============================================================
@@ -1888,6 +2414,7 @@ function init() {
   state.shoe = createShoe(NUM_DECKS);
   resetRound();
   initSaveSystem();
+  loadHistory();
   renderAll(false);
   updateButtons();
   document.getElementById('deal-btn').disabled = true;
