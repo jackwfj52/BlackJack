@@ -849,6 +849,41 @@ const RESHUFFLE_THRESHOLD = 52;
 const TOTAL_BACKS = 18; // number of built-in card back designs
 const DEFAULT_BACK = 1;
 
+// ---- Sound System ----
+const SOUNDS = {
+		Bet: 'resource/sounds/Bet.mp3',
+		BetAll: 'resource/sounds/BetAll.mp3',
+	Button: 'resource/sounds/Button.mp3',
+	Cancel: 'resource/sounds/Cancel.mp3',
+	Chip: 'resource/sounds/Chip.mp3',
+	Deal: 'resource/sounds/Deal.mp3',
+	Flip: 'resource/sounds/Flip.mp3',
+	Lose: 'resource/sounds/Lose.mp3',
+	Win: 'resource/sounds/Win.mp3',
+	PlayerBlackJack: 'resource/sounds/PlayerBlackJack.mp3',
+};
+
+const audioCache = {};
+
+function preloadSounds() {
+	Object.entries(SOUNDS).forEach(([name, path]) => {
+		const audio = new Audio();
+		audio.preload = 'auto';
+		audio.src = path;
+		audio.volume = 0.55;
+		audioCache[name] = audio;
+		audio.load();
+	});
+}
+
+function playSound(name) {
+	const audio = audioCache[name];
+	if (!audio) return;
+	const clone = audio.cloneNode();
+	clone.volume = audio.volume;
+	clone.play().catch(() => {});
+}
+
 // ---- Save/Load system (localStorage) ----
 const LS_SAVE_KEY = 'blackjack_saves';
 
@@ -1003,12 +1038,14 @@ function buildSaveList() {
 
   list.querySelectorAll('.load-save').forEach(btn => {
     btn.addEventListener('click', () => {
+        playSound('Button');
       loadSave(parseInt(btn.dataset.id));
       closeSaveModal();
     });
   });
   list.querySelectorAll('.del-save').forEach(btn => {
     btn.addEventListener('click', () => {
+        playSound('Button');
       const saveId = parseInt(btn.dataset.id);
       const save = savesCache.find(s => s.id === saveId);
       const saveName = save ? save.name : '此存档';
@@ -1186,6 +1223,7 @@ function renderCard(card, faceDown = false) {
 }
 
 function renderCardDealt(card, faceDown = false) {
+  playSound('Deal');
   const div = document.createElement('div');
   div.className = 'card dealing';
   const img = document.createElement('img');
@@ -1206,6 +1244,7 @@ function renderCardDealt(card, faceDown = false) {
     // Wait 0.5s showing the back, then flip to front
     setTimeout(() => {
       div.classList.add('flipping');
+          playSound('Flip');
       // Swap image mid-animation when card is edge-on
       setTimeout(() => {
         img.src = getCardFrontSrc(card);
@@ -1500,6 +1539,7 @@ function proceedAfterInsurance() {
         state.message += ` 保险赢 $${win - state.insuranceBet}`;
       }
     } else if (dealerHasBJ) {
+      playSound('Lose');
       state.message = '庄家 Blackjack！';
       if (state.insuranceBet > 0) {
         const win = state.insuranceBet * 3;
@@ -1507,6 +1547,7 @@ function proceedAfterInsurance() {
         state.message += ` 保险赢 $${win - state.insuranceBet}`;
       }
     } else if (playerHasBJ) {
+      playSound('PlayerBlackJack');
       const win = Math.floor(state.currentBet * 1.5);
       state.balance += state.currentBet + win;
       state.message = `Blackjack! 赢得 $${win} (3:2)`;
@@ -1576,6 +1617,7 @@ function updateDealerScoreInline() {
 }
 
 function flipHoleCard() {
+  playSound('Flip');
   // Flip the dealer's face-down hole card (second card) to reveal the front
   const dealerCards = document.querySelectorAll('#dealer-cards .card');
   if (dealerCards.length >= 2) {
@@ -1792,6 +1834,21 @@ function settleAll() {
   state.balance += totalWin;
   updateSaveChips();
   const totalBet = state.handBets.reduce((s, b) => s + b, 0);
+
+  // Play outcome sound
+  if (totalWin > totalBet) {
+    // Check if any hand got a natural blackjack
+    const hasPlayerBJ = state.playerHands.some((hand, idx) => {
+      return isBlackjack(hand) && state.playerHands.length === 1 && !isBust(hand);
+    });
+    if (hasPlayerBJ && !dealerBJ) {
+      playSound('PlayerBlackJack');
+    } else {
+      playSound('Win');
+    }
+  } else if (totalWin < totalBet) {
+    playSound('Lose');
+  }
   // Record balance history
   recordBalance(totalWin > totalBet ? 'win' : totalWin < totalBet ? 'lose' : 'push');
   state.message = results.join(' | ');
@@ -1893,6 +1950,7 @@ document.querySelectorAll('.chip-btn').forEach(btn => {
     if (newBet <= state.balance) {
       state.currentBet = newBet;
       state.chipHistory.push(amount);
+          playSound('Chip');
     }
     updateBalance();
     updateBetButtons();
@@ -1906,6 +1964,7 @@ document.querySelectorAll('.chip-btn').forEach(btn => {
     if (idx !== -1 && state.currentBet >= amount) {
       state.currentBet -= amount;
       state.chipHistory.splice(idx, 1);
+          playSound('Chip');
     }
     updateBalance();
     updateBetButtons();
@@ -1917,6 +1976,7 @@ document.getElementById('allin-btn').addEventListener('click', () => {
   if (state.balance <= 0) return;
   state.currentBet = state.balance;
   state.chipHistory = [];
+    playSound('BetAll');
   updateBalance();
   updateBetButtons();
 });
@@ -1926,6 +1986,7 @@ document.getElementById('clear-bet').addEventListener('click', () => {
   if (state.currentBet <= 0) return;
   state.currentBet = 0;
   state.chipHistory = [];
+      playSound('Cancel');
   updateBalance();
   updateBetButtons();
 });
@@ -1935,6 +1996,7 @@ document.getElementById('deal-btn').addEventListener('click', () => {
   if (state.currentBet <= 0) return;
   state.balance -= state.currentBet;
   startDeal();
+    playSound('Bet');
 });
 
 document.getElementById('hit-btn').addEventListener('click', hit);
@@ -1946,10 +2008,12 @@ document.getElementById('no-insurance-btn').addEventListener('click', declineIns
 
 // Rules modal
 document.getElementById('rules-btn').addEventListener('click', () => {
+      playSound('Button');
   document.getElementById('rules-modal-overlay').classList.remove('hidden');
 });
 
 document.getElementById('rules-modal-close').addEventListener('click', () => {
+      playSound('Button');
   document.getElementById('rules-modal-overlay').classList.add('hidden');
 });
 
@@ -1961,11 +2025,13 @@ document.getElementById('rules-modal-overlay').addEventListener('click', functio
 
 // Card back modal
 document.getElementById('settings-btn').addEventListener('click', () => {
+      playSound('Button');
   buildBackGrid();
   document.getElementById('modal-overlay').classList.remove('hidden');
 });
 
 document.getElementById('modal-close').addEventListener('click', () => {
+      playSound('Button');
   document.getElementById('modal-overlay').classList.add('hidden');
 });
 
@@ -1976,15 +2042,16 @@ document.getElementById('modal-overlay').addEventListener('click', function(e) {
 });
 
 // Save/Load modal
-document.getElementById('save-btn').addEventListener('click', openSaveModal);
+document.getElementById('save-btn').addEventListener('click', () => { playSound('Button'); openSaveModal(); });
 
-document.getElementById('save-modal-close').addEventListener('click', closeSaveModal);
+document.getElementById('save-modal-close').addEventListener('click', () => { playSound('Button'); closeSaveModal(); });
 
 document.getElementById('save-modal-overlay').addEventListener('click', function(e) {
   if (e.target === this) closeSaveModal();
 });
 
 document.getElementById('save-new-btn').addEventListener('click', () => {
+      playSound('Button');
   const input = document.getElementById('save-name-input');
   const name = input.value.trim();
   if (!name) {
@@ -2391,6 +2458,7 @@ document.addEventListener('mousemove', function(e) {
 
 // ---- Clear history ----
 document.getElementById('history-clear-btn').addEventListener('click', () => {
+      playSound('Button');
   if (confirm('确定要清除当前存档的盈亏记录吗？此操作不可撤销。')) {
     balanceHistory.length = 0;
     balanceHistories[_getActiveKey()] = [];
@@ -2401,8 +2469,8 @@ document.getElementById('history-clear-btn').addEventListener('click', () => {
 });
 
 // ---- Modal open/close ----
-document.getElementById('history-btn').addEventListener('click', openHistoryModal);
-document.getElementById('history-modal-close').addEventListener('click', closeHistoryModal);
+document.getElementById('history-btn').addEventListener('click', () => { playSound('Button'); openHistoryModal(); });
+document.getElementById('history-modal-close').addEventListener('click', () => { playSound('Button'); closeHistoryModal(); });
 document.getElementById('history-modal-overlay').addEventListener('click', function(e) {
   if (e.target === this) closeHistoryModal();
 });
@@ -2411,6 +2479,7 @@ document.getElementById('history-modal-overlay').addEventListener('click', funct
 // Init
 // ============================================================
 function init() {
+  preloadSounds();
   state.shoe = createShoe(NUM_DECKS);
   resetRound();
   initSaveSystem();
