@@ -1160,6 +1160,7 @@ const state = {
   currentBet: 0,
   chipHistory: [],  // stack of chip amounts added, for undo
   insuranceBet: 0,
+  splitAces: false,  // tracks whether current round is an Ace split
   phase: 'betting',
   message: '请下注开始游戏',
 };
@@ -1172,6 +1173,7 @@ function resetRound() {
   state.currentBet = 0;
   state.chipHistory = [];
   state.insuranceBet = 0;
+  state.splitAces = false;
   state.phase = 'betting';
   state.message = '请下注开始游戏';
 }
@@ -1727,6 +1729,7 @@ function split() {
   renderAll(false);
 
   if (card1.rank === 'A') {
+    state.splitAces = true;
     state.message = '分牌A — 每手只补一张牌，自动停牌';
     renderAll(false);
     setTimeout(() => {
@@ -1741,8 +1744,19 @@ function split() {
 function finishCurrentHand() {
   if (state.currentHandIndex < state.playerHands.length - 1) {
     state.currentHandIndex++;
+    state.phase = 'player_turn';
     const hand = state.playerHands[state.currentHandIndex];
     const score = calcScore(hand);
+
+    // Ace split hands auto-stand — skip interaction and move to next hand or dealer
+    const isAceSplitHand = state.splitAces && hand.length >= 2 && hand[0].rank === 'A';
+    if (isAceSplitHand) {
+      if (score > 21) state.message = `手牌 ${state.currentHandIndex + 1} 爆牌!`;
+      else state.message = `手牌 ${state.currentHandIndex + 1}: ${score}点 — 分牌A自动停牌`;
+      renderAll(true);
+      setTimeout(() => finishCurrentHand(), 800);
+      return;
+    }
 
     if (score >= 21) {
       if (score > 21) state.message = `手牌 ${state.currentHandIndex + 1} 爆牌!`;
@@ -1758,6 +1772,8 @@ function finishCurrentHand() {
     return;
   }
 
+  // Reset Ace split flag before dealer plays
+  state.splitAces = false;
   playDealer();
 }
 
