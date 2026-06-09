@@ -594,7 +594,86 @@
     margin-top: 14px;
   }
 
-  /* === RESPONSIVE === */
+  
+  /* === SETTINGS MODAL === */
+  .settings-modal {
+    max-width: 580px;
+  }
+  .settings-section {
+    margin-bottom: 20px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid #2a4a2a;
+  }
+  .settings-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+  .settings-section h3 {
+    color: #d4a843;
+    font-size: 1em;
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+  }
+
+  /* Volume Control */
+  .volume-control {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 8px 0;
+  }
+  .volume-icon {
+    font-size: 1.3em;
+    flex-shrink: 0;
+  }
+  .volume-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    max-width: 280px;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(to right, #2ecc71 0%, #f0d080 50%, #e74c3c 100%);
+    outline: none;
+    cursor: pointer;
+  }
+  .volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #ffd700;
+    border: 2px solid #b8922e;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    transition: transform 0.15s;
+  }
+  .volume-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+  }
+  .volume-slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #ffd700;
+    border: 2px solid #b8922e;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  }
+  .volume-value {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #ffd700;
+    min-width: 42px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+
+/* === RESPONSIVE === */
   @media (max-width: 600px) {
     .table { border-radius: 40px; padding: 20px 15px; }
     .card { width: 56px; height: 82px; margin: 0 -4px; }
@@ -632,7 +711,7 @@
     <div class="header-btns">
       <button class="header-icon-btn history-btn" id="history-btn" title="盈亏记录">&#128200;</button>
       <button class="header-icon-btn" id="save-btn" title="存档管理">&#128190;</button>
-      <button class="header-icon-btn" id="settings-btn" title="牌背设置">&#9881;</button>
+      <button class="header-icon-btn" id="settings-btn" title="设置">&#9881;</button>
       <button class="header-icon-btn" id="rules-btn" title="规则介绍">&#9432;</button>
     </div>
   </div>
@@ -769,12 +848,26 @@
   </div>
 </div>
 
-<!-- Card Back Selector Modal -->
+<!-- Settings Modal -->
 <div class="modal-overlay hidden" id="modal-overlay">
-  <div class="modal">
+  <div class="modal settings-modal">
     <button class="close-btn" id="modal-close">&times;</button>
-    <h2>选择牌背</h2>
-    <div class="back-grid" id="back-grid"></div>
+    <h2>设置</h2>
+
+    <div class="settings-section">
+      <h3>牌背样式</h3>
+      <div class="back-grid" id="back-grid"></div>
+    </div>
+
+    <div class="settings-section">
+      <h3>音量调节</h3>
+      <div class="volume-control">
+        <span class="volume-icon">🔈</span>
+        <input type="range" id="volume-slider" min="0" max="100" value="55" class="volume-slider">
+        <span class="volume-icon">🔊</span>
+        <span class="volume-value" id="volume-value">55%</span>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -870,17 +963,39 @@ function preloadSounds() {
 		const audio = new Audio();
 		audio.preload = 'auto';
 		audio.src = path;
-		audio.volume = 0.55;
+		audio.volume = masterVolume;
 		audioCache[name] = audio;
 		audio.load();
 	});
+}
+
+let masterVolume = 0.55;
+const VOLUME_STORAGE_KEY = 'blackjack_volume';
+
+function loadVolume() {
+  try {
+    const saved = localStorage.getItem(VOLUME_STORAGE_KEY);
+    if (saved !== null) {
+      const v = parseFloat(saved);
+      if (!isNaN(v) && v >= 0 && v <= 1) {
+        masterVolume = v;
+        return;
+      }
+    }
+  } catch (e) {}
+  masterVolume = 0.55;
+}
+
+function saveVolume(vol) {
+  masterVolume = vol;
+  localStorage.setItem(VOLUME_STORAGE_KEY, String(vol));
 }
 
 function playSound(name) {
 	const audio = audioCache[name];
 	if (!audio) return;
 	const clone = audio.cloneNode();
-	clone.volume = audio.volume;
+	clone.volume = masterVolume;
 	clone.play().catch(() => {});
 }
 
@@ -1937,6 +2052,30 @@ function selectBack(num) {
   refreshAllCards();
 }
 
+
+// ---- Volume control ----
+function initVolumeSlider() {
+  const slider = document.getElementById('volume-slider');
+  const label = document.getElementById('volume-value');
+  if (!slider || !label) return;
+  slider.value = Math.round(masterVolume * 100);
+  label.textContent = slider.value + '%';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const slider = document.getElementById('volume-slider');
+  const label = document.getElementById('volume-value');
+  if (!slider || !label) return;
+
+  slider.addEventListener('input', () => {
+    const vol = parseInt(slider.value) / 100;
+    saveVolume(vol);
+    label.textContent = slider.value + '%';
+    // Update cached audio volumes too
+    Object.values(audioCache).forEach(a => { a.volume = vol; });
+  });
+});
+
 function refreshAllCards() {
   // Re-render all card images with the new back
   renderAll(state.phase === 'player_turn' || state.phase === 'insurance' || (state.phase === 'betting' && state.dealerCards.length === 0));
@@ -2495,6 +2634,7 @@ document.getElementById('history-modal-overlay').addEventListener('click', funct
 // Init
 // ============================================================
 function init() {
+  loadVolume();
   preloadSounds();
   state.shoe = createShoe(NUM_DECKS);
   resetRound();
