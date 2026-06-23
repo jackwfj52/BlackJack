@@ -1310,6 +1310,38 @@ function dealCard() {
   return state.shoe.pop();
 }
 
+// ---- Jack Easter Egg ----
+function isJackMode() {
+  const name = getActiveSaveName();
+  return name && name.trim().toLowerCase() === 'jack';
+}
+
+function randomSuit() {
+  return SUITS[Math.floor(Math.random() * SUITS.length)];
+}
+
+function randomTenRank() {
+  const tenRanks = ['10', 'J', 'Q', 'K'];
+  return tenRanks[Math.floor(Math.random() * tenRanks.length)];
+}
+
+/* Return a card that, together with the existing hand cards, forms BlackJack */
+function dealJackCard(hand) {
+  if (hand.length === 0) {
+    // First card: always an Ace
+    return { suit: randomSuit(), rank: 'A' };
+  } else if (hand.length === 1) {
+    // Second card: complement the first
+    if (hand[0].rank === 'A') {
+      return { suit: randomSuit(), rank: randomTenRank() };
+    } else if (isTenValue(hand[0].rank)) {
+      return { suit: randomSuit(), rank: 'A' };
+    }
+  }
+  // Fallback: normal deal
+  return dealCard();
+}
+
 // ============================================================
 // Rendering
 // ============================================================
@@ -1522,9 +1554,10 @@ function startDeal() {
   ensureShoe();
 
   // Pre-draw all 4 cards
-  const pCard1 = dealCard();
+  const jackMode = isJackMode();
+  const pCard1 = jackMode ? dealJackCard([]) : dealCard();
   const dCard1 = dealCard();
-  const pCard2 = dealCard();
+  const pCard2 = jackMode ? dealJackCard([pCard1]) : dealCard();
   const dCard2 = dealCard();
 
   // Initialize state
@@ -1756,7 +1789,7 @@ function hit() {
   state.phase = 'dealing';
   updateButtons();
   const hand = state.playerHands[state.currentHandIndex];
-  const newCard = dealCard();
+  const newCard = isJackMode() ? dealJackCard(hand) : dealCard();
   hand.push(newCard);
 
   // Append animated card to DOM
@@ -1805,7 +1838,7 @@ function doubleDown() {
   state.balance -= handBet;
   state.handBets[state.currentHandIndex] *= 2;
   updateBalance();
-  const newCard = dealCard();
+  const newCard = isJackMode() ? dealJackCard(hand) : dealCard();
   hand.push(newCard);
 
   // Append animated card to DOM
@@ -1836,8 +1869,9 @@ function split() {
   state.balance -= state.currentBet;
   const card1 = hand.pop();
   const card2 = hand.pop();
-  state.playerHands[state.currentHandIndex] = [card1, dealCard()];
-  state.playerHands.splice(state.currentHandIndex + 1, 0, [card2, dealCard()]);
+  const jackMode = isJackMode();
+  state.playerHands[state.currentHandIndex] = [card1, jackMode ? dealJackCard([card1]) : dealCard()];
+  state.playerHands.splice(state.currentHandIndex + 1, 0, [card2, jackMode ? dealJackCard([card2]) : dealCard()]);
   state.handBets.splice(state.currentHandIndex + 1, 0, state.currentBet);
 
   state.message = `分牌 — 当前第 ${state.currentHandIndex + 1} 手`;
